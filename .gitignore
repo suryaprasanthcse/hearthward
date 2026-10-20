@@ -1,0 +1,152 @@
+# HEARTHWARD .gitignore
+# Lockfiles (uv.lock, package-lock.json, pnpm-lock.yaml) and cdk.context.json are committed on purpose.
+
+# ── Secrets and credentials ──────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+!.env.sample
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.jks
+secrets/
+.secrets/
+.aws/
+credentials
+credentials.*
+*.credentials.json
+*_token.json
+*.tokens.json
+
+# ── Personal data captures (never commit real Bee or Ring data) ──────────
+bee-sync/
+captures/
+recordings/
+*.capture.jsonl
+*.raw.jsonl
+
+# ── Python ────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+*.egg
+.eggs/
+build/
+dist/
+develop-eggs/
+downloads/
+sdist/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+MANIFEST
+pip-log.txt
+pip-delete-this-directory.txt
+__pypackages__/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+.virtualenv/
+.conda/
+
+# Test, coverage and type-checker caches
+.pytest_cache/
+.hypothesis/
+.tox/
+.nox/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+*.cover
+nosetests.xml
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+.ruff_cache/
+.pyright/
+.ipynb_checkpoints/
+
+# ── Node / TypeScript ─────────────────────────────────────────────────────
+node_modules/
+.pnpm-store/
+.npm/
+.yarn/cache/
+.yarn/unplugged/
+.yarn/install-state.gz
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+*.tsbuildinfo
+.eslintcache
+.stylelintcache
+.parcel-cache/
+.vite/
+.turbo/
+.next/
+out/
+coverage/
+storybook-static/
+
+# React Native / Vega build output
+.expo/
+.metro-health-check*
+android/.gradle/
+android/app/build/
+ios/Pods/
+ios/build/
+
+# ── AWS CDK / SAM / Lambda ────────────────────────────────────────────────
+cdk.out/
+.cdk.staging/
+.aws-sam/
+*.zip
+lambda-build/
+layer-build/
+
+# ── Local datastores (FalkorDB / Redis / DynamoDB Local) ──────────────────
+dump.rdb
+appendonly.aof
+appendonlydir/
+*.rdb
+shared-local-instance.db
+docker-compose.override.yml
+
+# ── Logs and temp files ───────────────────────────────────────────────────
+logs/
+*.log
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+tmp/
+.cache/
+
+# ── IDE and OS ────────────────────────────────────────────────────────────
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.code-workspace
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ── Agent tooling (local-only settings) ──────────────────────────────────
+.claude/settings.local.json
