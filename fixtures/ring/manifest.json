@@ -1,0 +1,30 @@
+{
+  "expected_envelope": {
+    "auth": {
+      "scheme": "ring-hmac",
+      "synthetic": true,
+      "verified": true
+    },
+    "household": "hh_demo0001",
+    "kind": "door.motion",
+    "payload_digest": "sha256:44a73148ac40c62fb3316609ee96519ff88d2673956d293603d6533d85098ce6",
+    "raw_digest": "sha256:27a512a9b4acc11866980b339caab5573f056dfc86bd445d3fff6526287e64e9",
+    "received_at": 1792486801372,
+    "sent_time": 1792486801375,
+    "source": "ring",
+    "source_event_id": "0ee0c5f5-89b6-48da-92c8-8cb4c8f1701b",
+    "src_time": 1792486800800,
+    "v": 1,
+    "valid": {
+      "hi": 1792486802800,
+      "lo": 1792486798800
+    }
+  },
+  "file": "sample.json",
+  "key_label": "synthetic",
+  "received_at": 1792486801372,
+  "scenario": "doorstep_scam",
+  "seed": 7,
+  "sha256": "27a512a9b4acc11866980b339caab5573f056dfc86bd445d3fff6526287e64e9",
+  "x_signature": "sha256=4a1df7a993b95d820b32de19ffb5f95fe4a2ba25663afd883bcfefc301a9c98e"
+}

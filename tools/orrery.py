@@ -19,6 +19,7 @@ the GNOMON adapter and `hearthward.decision.hmm` are checked against at gate G4.
     python tools/orrery.py --scenario late_and_lossy --format json
     python tools/orrery.py --scenario doorstep_scam --door-offset-ms 90000 --realtime 4
     python tools/orrery.py --selftest
+    python tools/orrery.py --export-fixtures fixtures
 
 Standard library only, so it runs before any dependency is installed.
 """
@@ -1059,6 +1060,87 @@ def simulate(spec: dict[str, Any], name: str, seed: int = 7, injections: Injecti
     return Result(name, seed, rows, orrery.ledger, orrery.summary(rows))
 
 
+# ── fixture export ────────────────────────────────────────────────────────────────────────────────
+
+
+def _fixture_json(obj: Any) -> bytes:
+    """Fixture JSON: sorted keys, two-space indent, ASCII only, one trailing LF."""
+    return (json.dumps(obj, sort_keys=True, indent=2, ensure_ascii=True) + "\n").encode("utf-8")
+
+
+def _expected(envelope: dict[str, Any] | None) -> dict[str, Any] | None:
+    """The envelope minus the chain fields (seq, prev, head), which depend on the whole ledger."""
+    if envelope is None:
+        return None
+    return {k: v for k, v in envelope.items() if k not in ("seq", "prev", "head")}
+
+
+def export_fixtures(spec: dict[str, Any], out_dir: Path, scenario: str = "doorstep_scam",
+                    seed: int = 7) -> list[Path]:
+    """Write the first Ring delivery and the Bee stream of a run as byte-exact fixtures, with manifests.
+
+    The run is the ordinary one: a recorder wraps `_process`, so behavior and RNG draws are untouched."""
+    orrery = Orrery(spec, SCENARIOS[scenario](), seed)
+    seen: list[tuple[Arrival, Beat, dict[str, Any], dict[str, Any] | None]] = []
+    process = orrery._process
+
+    def recorder(arrival: Arrival) -> Iterator[Row]:
+        before = len(orrery.ledger)
+        yield from process(arrival)
+        envelope = orrery.ledger[-1] if len(orrery.ledger) > before else None
+        seen.append((arrival, orrery.scenario.beats[arrival.index], orrery.meta[arrival.index], envelope))
+
+    orrery._process = recorder  # type: ignore[method-assign]
+    for _ in orrery.run():
+        pass
+
+    written: list[Path] = []
+
+    def write(path: Path, data: bytes) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(data)
+        written.append(path)
+
+    ring = next(((m, env) for _, beat, m, env in seen if beat.lane == "door" and env is not None), None)
+    if ring is None:
+        raise SpecError(f"{scenario}: no ledgered DOOR arrival to export")
+    m, envelope = ring
+    write(out_dir / "ring" / "sample.json", m["raw"])
+    write(out_dir / "ring" / "manifest.json", _fixture_json({
+        "file": "sample.json",
+        "x_signature": m["signature"],
+        "key_label": "synthetic",
+        "received_at": envelope["received_at"],
+        "sha256": hashlib.sha256(m["raw"]).hexdigest(),
+        "scenario": scenario,
+        "seed": seed,
+        "expected_envelope": _expected(envelope),
+    }))
+
+    wrist = [(arrival, m, env) for arrival, beat, m, env in seen if beat.lane == "wrist"]
+    lines = []
+    for n, (arrival, m, env) in enumerate(wrist, 1):
+        now = EPOCH_MS + arrival.at
+        lines.append({
+            "line": n,
+            "signature": m["signature"],
+            "received_at": now,
+            "via": arrival.via,
+            "sync_bounds": list(orrery._valid("wrist", m, now, "sync")) if arrival.via == "sync" else None,
+            "sha256": hashlib.sha256(m["raw"]).hexdigest(),
+            "expected_envelope": _expected(env),
+        })
+    write(out_dir / "bee" / "stream.jsonl", b"".join(m["raw"] + b"\n" for _, m, _ in wrist))
+    write(out_dir / "bee" / "manifest.json", _fixture_json({
+        "file": "stream.jsonl",
+        "key_label": "synthetic",
+        "scenario": scenario,
+        "seed": seed,
+        "lines": lines,
+    }))
+    return written
+
+
 # ── self-test ─────────────────────────────────────────────────────────────────────────────────────
 
 
@@ -1180,6 +1262,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--spec", type=Path, default=BLUEPRINT, help="blueprint to read the hearthward blocks from")
     parser.add_argument("--list-scenarios", action="store_true")
     parser.add_argument("--selftest", action="store_true")
+    parser.add_argument("--export-fixtures", type=Path, metavar="DIR",
+                        help="write the first Ring delivery and the Bee stream as byte-exact fixtures under DIR")
     args = parser.parse_args(argv)
     sys.stdout.reconfigure(errors="replace")
 
@@ -1192,6 +1276,14 @@ def main(argv: list[str] | None = None) -> int:
     except SpecError as exc:
         print(f"orrery: {exc}", file=sys.stderr)
         return 2
+    if args.export_fixtures is not None:
+        for path in export_fixtures(spec, args.export_fixtures, args.scenario, args.seed):
+            try:
+                shown = path.resolve().relative_to(Path.cwd().resolve())
+            except ValueError:
+                shown = path
+            print(f"{shown.as_posix()}  sha256:{hashlib.sha256(path.read_bytes()).hexdigest()}")
+        return 0
     if args.selftest:
         problems, results = selftest(spec, args.seed)
         for name, result in results.items():

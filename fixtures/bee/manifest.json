@@ -1,0 +1,182 @@
+{
+  "file": "stream.jsonl",
+  "key_label": "synthetic",
+  "lines": [
+    {
+      "expected_envelope": {
+        "auth": {
+          "scheme": "bridge-hmac",
+          "synthetic": true,
+          "verified": true
+        },
+        "household": "hh_demo0001",
+        "kind": "wrist.conversation",
+        "payload_digest": "sha256:f97d7d02eb5379f2eac0b9766fcd1aa5c07895268d3135ed2397c9dbfcff5506",
+        "raw_digest": "sha256:7b38ff15e948607b217758427732e34d2711c6b9ef97ab5689e568895a43021f",
+        "received_at": 1792486812251,
+        "sent_time": null,
+        "source": "bee",
+        "source_event_id": "bee:22586c6a-4374-4817-970c-0e84b038ff0f:7b38ff15e948607b",
+        "src_time": null,
+        "v": 1,
+        "valid": {
+          "hi": 1792486812251,
+          "lo": 1792486802251
+        }
+      },
+      "line": 1,
+      "received_at": 1792486812251,
+      "sha256": "7b38ff15e948607b217758427732e34d2711c6b9ef97ab5689e568895a43021f",
+      "signature": "f8557285dcd25055bca4456d54c34b338efe724d210cad1d6bb18492c7cde6ec",
+      "sync_bounds": null,
+      "via": "push"
+    },
+    {
+      "expected_envelope": {
+        "auth": {
+          "scheme": "bridge-hmac",
+          "synthetic": true,
+          "verified": true
+        },
+        "household": "hh_demo0001",
+        "kind": "wrist.utterance",
+        "payload_digest": "sha256:7b78bfce07b83846c4ef013e1476a9a9d3f223fefa78a43de58a733abba7bb11",
+        "raw_digest": "sha256:c97b21b4f8beacae74696ca8627c799e10804c8b59336b82a8cd88467eec77be",
+        "received_at": 1792486819815,
+        "sent_time": null,
+        "source": "bee",
+        "source_event_id": "bee:22586c6a-4374-4817-970c-0e84b038ff0f:c97b21b4f8beacae",
+        "src_time": null,
+        "v": 1,
+        "valid": {
+          "hi": 1792486819815,
+          "lo": 1792486809815
+        }
+      },
+      "line": 2,
+      "received_at": 1792486819815,
+      "sha256": "c97b21b4f8beacae74696ca8627c799e10804c8b59336b82a8cd88467eec77be",
+      "signature": "750d6b7513f1680700d29c0b95bd2cb71aaedb63cfce48c397df5431b0016849",
+      "sync_bounds": null,
+      "via": "push"
+    },
+    {
+      "expected_envelope": {
+        "auth": {
+          "scheme": "bridge-hmac",
+          "synthetic": true,
+          "verified": true
+        },
+        "household": "hh_demo0001",
+        "kind": "wrist.utterance",
+        "payload_digest": "sha256:9c2d97acea5dbe2ce52e318623b4c4bd3e0f129d3d94b67d65c6f4a7a12ce86b",
+        "raw_digest": "sha256:bb9814a33f0efbda6b3bfff2cabdc80170ad7cce3bb1f455ca933c054034b9bb",
+        "received_at": 1792486826394,
+        "sent_time": null,
+        "source": "bee",
+        "source_event_id": "bee:22586c6a-4374-4817-970c-0e84b038ff0f:bb9814a33f0efbda",
+        "src_time": null,
+        "v": 1,
+        "valid": {
+          "hi": 1792486826394,
+          "lo": 1792486816394
+        }
+      },
+      "line": 3,
+      "received_at": 1792486826394,
+      "sha256": "bb9814a33f0efbda6b3bfff2cabdc80170ad7cce3bb1f455ca933c054034b9bb",
+      "signature": "2a162e1e6793b7afb04f3662e7b0a997df23244e156f1e1df62f62ec578002fd",
+      "sync_bounds": null,
+      "via": "push"
+    },
+    {
+      "expected_envelope": {
+        "auth": {
+          "scheme": "bridge-hmac",
+          "synthetic": true,
+          "verified": true
+        },
+        "household": "hh_demo0001",
+        "kind": "wrist.utterance",
+        "payload_digest": "sha256:6e43fd35afb492f8f673b8dd2697fd84c3f0f1a20a7cfeea7447b090e1d035b9",
+        "raw_digest": "sha256:08acb75a3000a7e3ab5d1491dba3b2fb0a4a8ce958ced187864675cb6061219c",
+        "received_at": 1792486836987,
+        "sent_time": null,
+        "source": "bee",
+        "source_event_id": "bee:22586c6a-4374-4817-970c-0e84b038ff0f:08acb75a3000a7e3",
+        "src_time": null,
+        "v": 1,
+        "valid": {
+          "hi": 1792486836987,
+          "lo": 1792486826987
+        }
+      },
+      "line": 4,
+      "received_at": 1792486836987,
+      "sha256": "08acb75a3000a7e3ab5d1491dba3b2fb0a4a8ce958ced187864675cb6061219c",
+      "signature": "a8bacb4379d98e7ad947ada45c2619d69dd17222b0aef1ac9d7f40689bfc4826",
+      "sync_bounds": null,
+      "via": "push"
+    },
+    {
+      "expected_envelope": {
+        "auth": {
+          "scheme": "bridge-hmac",
+          "synthetic": true,
+          "verified": true
+        },
+        "household": "hh_demo0001",
+        "kind": "wrist.utterance",
+        "payload_digest": "sha256:a81ea0001088091b87496f5470bca21f464a871d8638719205d9acc19ad02ef8",
+        "raw_digest": "sha256:3d43364358959de23b06e9c05478c257396580a1a3724b81415d38e6f9ead961",
+        "received_at": 1792486846135,
+        "sent_time": null,
+        "source": "bee",
+        "source_event_id": "bee:22586c6a-4374-4817-970c-0e84b038ff0f:3d43364358959de2",
+        "src_time": null,
+        "v": 1,
+        "valid": {
+          "hi": 1792486846135,
+          "lo": 1792486836135
+        }
+      },
+      "line": 5,
+      "received_at": 1792486846135,
+      "sha256": "3d43364358959de23b06e9c05478c257396580a1a3724b81415d38e6f9ead961",
+      "signature": "0ece86b85b896564893946c79a381cc71b08b4e0ce8067cf0fe0ce486b7fa72b",
+      "sync_bounds": null,
+      "via": "push"
+    },
+    {
+      "expected_envelope": {
+        "auth": {
+          "scheme": "bridge-hmac",
+          "synthetic": true,
+          "verified": true
+        },
+        "household": "hh_demo0001",
+        "kind": "wrist.utterance",
+        "payload_digest": "sha256:c322a0beb26eb4971446530fe0bec2f2d0f17f50b0a80d072788e1d998e50071",
+        "raw_digest": "sha256:e1fbfdaafdea3249f71ec5d3efee3af2ed2aa4374ca4d1a48338f0799fb7235f",
+        "received_at": 1792486858998,
+        "sent_time": null,
+        "source": "bee",
+        "source_event_id": "bee:22586c6a-4374-4817-970c-0e84b038ff0f:e1fbfdaafdea3249",
+        "src_time": null,
+        "v": 1,
+        "valid": {
+          "hi": 1792486858998,
+          "lo": 1792486848998
+        }
+      },
+      "line": 6,
+      "received_at": 1792486858998,
+      "sha256": "e1fbfdaafdea3249f71ec5d3efee3af2ed2aa4374ca4d1a48338f0799fb7235f",
+      "signature": "1294a8265d777bf1412e77aec930e1e6c8fcb40b753ec9e053a4bc4cc0f3d7bd",
+      "sync_bounds": null,
+      "via": "push"
+    }
+  ],
+  "scenario": "doorstep_scam",
+  "seed": 7
+}
