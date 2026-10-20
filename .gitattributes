@@ -1,0 +1,5 @@
+# Keep signed and hashed bytes exact. HMAC-SHA256 webhook signatures and HW-JCS digests are
+# computed over raw bytes, and core.autocrlf=true on Windows would rewrite LF to CRLF on checkout.
+fixtures/** -text
+*.json -text
+*.jsonl -text
