@@ -1,0 +1,143 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "auth": {
+      "additionalProperties": false,
+      "properties": {
+        "scheme": {
+          "enum": [
+            "ring-hmac",
+            "bridge-hmac",
+            "oauth2.1",
+            "internal"
+          ],
+          "type": "string"
+        },
+        "synthetic": {
+          "type": "boolean"
+        },
+        "verified": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "scheme",
+        "verified",
+        "synthetic"
+      ],
+      "type": "object"
+    },
+    "head": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "household": {
+      "pattern": "^hh_[0-9a-z]{8,32}$",
+      "type": "string"
+    },
+    "kind": {
+      "enum": [
+        "door.motion",
+        "door.button",
+        "room.consult",
+        "room.concern",
+        "room.s_minus",
+        "wrist.conversation",
+        "wrist.utterance",
+        "system.verified_callback"
+      ],
+      "type": "string"
+    },
+    "payload_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "prev": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "raw_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "received_at": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "sent_time": {
+      "minimum": 0,
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "seq": {
+      "minimum": 1,
+      "type": "integer"
+    },
+    "source": {
+      "enum": [
+        "ring",
+        "bee",
+        "alexa",
+        "system"
+      ],
+      "type": "string"
+    },
+    "source_event_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "type": "string"
+    },
+    "src_time": {
+      "minimum": 0,
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "v": {
+      "const": 1,
+      "type": "integer"
+    },
+    "valid": {
+      "additionalProperties": false,
+      "properties": {
+        "hi": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "lo": {
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "lo",
+        "hi"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "v",
+    "household",
+    "source",
+    "source_event_id",
+    "kind",
+    "valid",
+    "src_time",
+    "sent_time",
+    "received_at",
+    "seq",
+    "raw_digest",
+    "payload_digest",
+    "auth",
+    "prev",
+    "head"
+  ],
+  "type": "object"
+}

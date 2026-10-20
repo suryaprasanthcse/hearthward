@@ -1,0 +1,23 @@
+{
+  "bee_sync_interval_ms": 300000,
+  "delta_ms": {
+    "alexa": 3000,
+    "bee": 10000
+  },
+  "epsilon_ring_ms": 2000,
+  "lateness_ms": {
+    "alexa": 5000,
+    "bee": 600000,
+    "ring": 4356000
+  },
+  "max_skew_ms": 60000,
+  "ring_retry_schedule_ms": [
+    1000,
+    5000,
+    30000,
+    120000,
+    600000,
+    3600000
+  ],
+  "visit_gap_ms": 120000
+}
