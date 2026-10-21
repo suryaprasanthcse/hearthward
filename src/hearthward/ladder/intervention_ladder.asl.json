@@ -1,0 +1,165 @@
+{
+  "Comment": "InterventionLadder (blueprint section 8). Standard workflow, one execution per episode, named after the episode id. L1 notifies the caregiver web view and the elder's phone in parallel. L2 walks the trusted circle in priority order, one member at a time, each step a callback task that waits for a signal. L3 (voice call) is deferred. ${...} names are filled by the stack as DefinitionSubstitutions.",
+  "StartAt": "L1Notify",
+  "TimeoutSeconds": 86400,
+  "States": {
+    "L1Notify": {
+      "Type": "Parallel",
+      "Comment": "L1: both channels at once. A failing channel never stops the ladder.",
+      "Branches": [
+        {
+          "StartAt": "NotifyCaregiverWeb",
+          "States": {
+            "NotifyCaregiverWeb": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke",
+              "Parameters": {
+                "FunctionName": "${NotifyCaregiverWebFunctionArn}",
+                "Payload": {"episode.$": "$.episode", "household.$": "$.household"}
+              },
+              "ResultPath": null,
+              "Retry": [
+                {"ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException", "Lambda.TooManyRequestsException"], "IntervalSeconds": 2, "MaxAttempts": 2, "BackoffRate": 2}
+              ],
+              "Catch": [{"ErrorEquals": ["States.ALL"], "ResultPath": "$.error", "Next": "CaregiverWebFailed"}],
+              "End": true
+            },
+            "CaregiverWebFailed": {"Type": "Pass", "End": true}
+          }
+        },
+        {
+          "StartAt": "NotifyElderPhone",
+          "States": {
+            "NotifyElderPhone": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke",
+              "Parameters": {
+                "FunctionName": "${NotifyElderPhoneFunctionArn}",
+                "Payload": {"episode.$": "$.episode", "household.$": "$.household"}
+              },
+              "ResultPath": null,
+              "Retry": [
+                {"ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException", "Lambda.TooManyRequestsException"], "IntervalSeconds": 2, "MaxAttempts": 2, "BackoffRate": 2}
+              ],
+              "Catch": [{"ErrorEquals": ["States.ALL"], "ResultPath": "$.error", "Next": "ElderPhoneFailed"}],
+              "End": true
+            },
+            "ElderPhoneFailed": {"Type": "Pass", "End": true}
+          }
+        }
+      ],
+      "ResultPath": null,
+      "Next": "L2EscalateCircle"
+    },
+    "L2EscalateCircle": {
+      "Type": "Map",
+      "Comment": "L2: the trusted circle in priority order, one member at a time (MaxConcurrency 1).",
+      "ItemsPath": "$.circle",
+      "MaxConcurrency": 1,
+      "ItemSelector": {
+        "member.$": "$$.Map.Item.Value",
+        "position.$": "$$.Map.Item.Index",
+        "episode.$": "$.episode",
+        "household.$": "$.household"
+      },
+      "ItemProcessor": {
+        "ProcessorConfig": {"Mode": "INLINE"},
+        "StartAt": "CheckEpisodeOpen",
+        "States": {
+          "CheckEpisodeOpen": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::lambda:invoke",
+            "Comment": "An earlier member's acknowledgement closes the ladder: the remaining iterations skip.",
+            "Parameters": {
+              "FunctionName": "${CheckEpisodeFunctionArn}",
+              "Payload": {"episode.$": "$.episode", "household.$": "$.household"}
+            },
+            "ResultSelector": {"open.$": "$.Payload.open"},
+            "ResultPath": "$.check",
+            "Retry": [
+              {"ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException", "Lambda.TooManyRequestsException"], "IntervalSeconds": 2, "MaxAttempts": 2, "BackoffRate": 2}
+            ],
+            "Catch": [{"ErrorEquals": ["States.ALL"], "ResultPath": "$.error", "Next": "NotifyMember"}],
+            "Next": "StillOpen"
+          },
+          "StillOpen": {
+            "Type": "Choice",
+            "Choices": [{"Variable": "$.check.open", "BooleanEquals": false, "Next": "MemberSkipped"}],
+            "Default": "NotifyMember"
+          },
+          "NotifyMember": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+            "Comment": "Waits for SendTaskSuccess. The worker that holds the token sends heartbeats while the notification is outstanding.",
+            "TimeoutSeconds": 90,
+            "HeartbeatSeconds": 30,
+            "Parameters": {
+              "FunctionName": "${NotifyCircleMemberFunctionArn}",
+              "Payload": {
+                "taskToken.$": "$$.Task.Token",
+                "member.$": "$.member",
+                "position.$": "$.position",
+                "episode.$": "$.episode",
+                "household.$": "$.household"
+              }
+            },
+            "ResultPath": "$.reply",
+            "Retry": [
+              {"ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException", "Lambda.TooManyRequestsException"], "IntervalSeconds": 2, "MaxAttempts": 2, "BackoffRate": 2}
+            ],
+            "Catch": [
+              {"ErrorEquals": ["States.Timeout", "States.HeartbeatTimeout"], "ResultPath": "$.reply", "Next": "MemberTimedOut"},
+              {"ErrorEquals": ["States.ALL"], "ResultPath": "$.error", "Next": "MemberFailed"}
+            ],
+            "Next": "RouteSignal"
+          },
+          "RouteSignal": {
+            "Type": "Choice",
+            "Comment": "SendTaskSuccess(token, {\"signal\": \"ESCALATE\"}) from the fusion worker means new evidence: move on at once. Any signal we do not know escalates too.",
+            "Choices": [
+              {"Variable": "$.reply.signal", "StringEquals": "ACK", "Next": "MemberAcknowledged"},
+              {"Variable": "$.reply.signal", "StringEquals": "ESCALATE", "Next": "MemberEscalated"}
+            ],
+            "Default": "MemberEscalated"
+          },
+          "MemberAcknowledged": {"Type": "Pass", "Parameters": {"member.$": "$.member.id", "outcome": "ACK"}, "End": true},
+          "MemberEscalated": {"Type": "Pass", "Parameters": {"member.$": "$.member.id", "outcome": "ESCALATE"}, "End": true},
+          "MemberTimedOut": {"Type": "Pass", "Parameters": {"member.$": "$.member.id", "outcome": "TIMEOUT"}, "End": true},
+          "MemberFailed": {"Type": "Pass", "Parameters": {"member.$": "$.member.id", "outcome": "FAILED"}, "End": true},
+          "MemberSkipped": {"Type": "Pass", "Parameters": {"member.$": "$.member.id", "outcome": "SKIPPED"}, "End": true}
+        }
+      },
+      "ResultPath": "$.l2",
+      "Next": "ConcludeL2"
+    },
+    "ConcludeL2": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${ConcludeLadderFunctionArn}",
+        "Payload": {"episode.$": "$.episode", "household.$": "$.household", "outcomes.$": "$.l2"}
+      },
+      "ResultSelector": {"resolved.$": "$.Payload.resolved"},
+      "ResultPath": "$.conclusion",
+      "Retry": [
+        {"ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException", "Lambda.TooManyRequestsException"], "IntervalSeconds": 2, "MaxAttempts": 3, "BackoffRate": 2}
+      ],
+      "Catch": [{"ErrorEquals": ["States.ALL"], "ResultPath": "$.error", "Next": "L3Deferred"}],
+      "Next": "WasResolved"
+    },
+    "WasResolved": {
+      "Type": "Choice",
+      "Choices": [{"Variable": "$.conclusion.resolved", "BooleanEquals": true, "Next": "LadderResolved"}],
+      "Default": "L3Deferred"
+    },
+    "L3Deferred": {
+      "Type": "Pass",
+      "Comment": "L3 (voice call) is deferred. The episode stays open; the ladder ends without resolving it.",
+      "Result": {"level": "L3", "status": "deferred"},
+      "ResultPath": "$.l3",
+      "Next": "LadderExhausted"
+    },
+    "LadderExhausted": {"Type": "Succeed"},
+    "LadderResolved": {"Type": "Succeed"}
+  }
+}

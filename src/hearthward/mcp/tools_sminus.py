@@ -55,19 +55,30 @@ def _proof_required(tool: str, answer: dict[str, Any], now_ms: int) -> dict[str,
             "rules": rules, "expires_at_ms": answer["expires_at_ms"], "spoken_hint": HINTS[tool]}
 
 
+def _broker_refusal(tool: str, answer: dict[str, Any]) -> dict[str, Any] | None:
+    """A broker that refuses says which rules stopped the action; keep those (HX-05 must not read as HX-11)."""
+    rules = answer.get("rules")
+    if (answer.get("status") == "BLOCKED" and isinstance(rules, list) and 0 < len(rules) <= 12
+            and all(isinstance(r, str) and RULE.fullmatch(r) for r in rules)):
+        return blocked(tool, tuple(rules))
+    return None
+
+
 def _handler(tool: str) -> Callable[[dict[str, Any], ToolContext], dict[str, Any]]:
     def handle(args: dict[str, Any], ctx: ToolContext) -> dict[str, Any]:
         base = ("HX-02", *TOOL_RULES[tool])
-        if ctx.store.open_episode() is not None:
-            return blocked(tool, (*base, "HX-01"))  # HX-01: the open-episode lock; dual approval is the broker's job
-        if ctx.broker is None:
-            return blocked(tool, (*base, "HX-11"))
+        if ctx.broker is None:  # nobody to ask: refuse (HX-11), naming the open-episode lock when it applies
+            locked = ("HX-01",) if ctx.store.open_episode() is not None else ()
+            return blocked(tool, (*base, *locked, "HX-11"))
+        # With a broker, HX-01 is its to decide: an open episode needs two distinct members, not a flat refusal.
         try:
             answer = ctx.broker.challenge(ctx.household, tool, args)
         except Exception:  # noqa: BLE001 - HX-11: a failing broker may never open the door
             return blocked(tool, (*base, "HX-11"))
-        challenge = _proof_required(tool, answer, ctx.clock()) if isinstance(answer, dict) else None
-        return challenge or blocked(tool, (*base, "HX-11"))
+        if not isinstance(answer, dict):
+            return blocked(tool, (*base, "HX-11"))
+        return (_proof_required(tool, answer, ctx.clock()) or _broker_refusal(tool, answer)
+                or blocked(tool, (*base, "HX-11")))
 
     return handle
 
