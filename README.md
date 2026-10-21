@@ -68,8 +68,9 @@ environment is locked (`uv.lock`) and `mcp` is pinned to 2.3.0.
 uv sync
 ```
 
-`vendor/gnomon` is a git submodule whose URL is relative (`../gnomon`), so it resolves only when a GNOMON repository
-sits next to this one. Nothing in the runtime reads it yet; a gate check only confirms it is pinned.
+`vendor/gnomon` is a git submodule whose URL is relative (`../gnomon`), so it resolves only when a clone of
+[GNOMON](https://github.com/suryaprasanthcse/gnomon) sits next to this one. Nothing in the runtime reads it yet; a gate
+check only confirms it is pinned.
 
 ```bash
 git submodule update --init
@@ -103,28 +104,61 @@ facade for key lookup, which means a deployment.
 
 ## Built during the submission window
 
-Everything in this repository was written for this submission. Its git history starts on 2026-10-20 and the gates
-were completed over the days after (`docs/gates/G1_COMPLETION_LOG.md` to `G6_COMPLETION_LOG.md` record what each gate
-added and how it was checked). The 11 MCP tool schemas, the decision core, the broker, the ladder, the attestation
-path and the web pages are all new code here.
+The hackathon window ran from August 31, 2026 to October 23, 2026, 12:00 PM PT. HEARTHWARD and every earlier system
+listed below were written by **Surya Prasanth R**, the sole human author and contributor of all of them, within that
+window. HEARTHWARD itself was built with AI assistance, disclosed in full under [AI assistance](#ai-assistance).
+
+### What was assembled for this submission
+
+This repository's git history starts on 2026-10-20, and the gates were completed over the days after
+(`docs/gates/G1_COMPLETION_LOG.md` to `G7_COMPLETION_LOG.md` record what each gate added and how it was checked).
+The HEARTHWARD core runtime is all new code here:
+
+- A Starlette **Streamable HTTP MCP server** at `/mcp`: stateless, JSON responses, protocol versions 2025-11-25,
+  2025-06-18 and 2025-03-26 negotiated (a request without `MCP-Protocol-Version` counts as 2025-03-26), and a
+  `401` without `WWW-Authenticate`.
+- An **RFC 8414 OAuth 2.1 facade** (a Lambda in the CDK stack) that supplies what Cognito's discovery omits: S256
+  advertised for PKCE, RFC 8414 metadata, a resource-bound `client_credentials` grant.
+- **Wald's SPRT** over a five-state left-to-right **HMM**, with evidence reported, compared and hashed as integer
+  milli-nats. The arithmetic runs in floating-point log space and is rounded to the milli-nat; it matches the
+  reference simulator exactly on the conformance vectors.
+- The **`InterventionLadder`** Step Functions Standard state machine, with callback tasks that wait on a task token
+  under a bounded timeout and heartbeat, and an escalation signal sent with `SendTaskSuccess`.
+- A **standard-library-only offline verifier** (`tools/verify_attestation.py`) for KMS-signed decisions and ledger
+  anchors, and a **WebAuthn relying party** (`src/hearthward/authz/webauthn_rp.py`) behind the broker.
+- An **AWS CDK stack** (`infra/app.py`) covering the DynamoDB tables, KMS keys, Cognito, the two HTTP APIs, the facade
+  Lambda and the Fargate MCP service. It has been synthesized, not deployed; the ladder and the anchor job are not in it
+  yet.
 
 What it does **not** include: the gate-by-gate logs list what is stubbed. Notably the tools run on an in-memory
 synthetic store, the decision core is not yet wired into the tools (a placeholder scorer answers them), the broker has
 no facts source or passkey registration, and the Ring, Bee, fusion, FalkorDB and web-API pieces of the blueprint's
 topology are not built.
 
-### Earlier repositories
+### Earlier systems and what HEARTHWARD took from them
 
-The blueprint credits earlier projects of the same author. What the repository records about them:
+All of these are by Surya Prasanth R and were built within the same window. They are separate repositories; the
+pattern is what carried over, and no code from them is copied into `src/`.
 
-- **GNOMON**: the bitemporal model (fact versions with a point valid time and belief bounds `[ts, te)`, a kernel
-  with audits K1 to K9 and a mutation suite, `MAX_SKEW_MS = 60000`, branch-and-diff with `GRAPH.COPY`). HEARTHWARD
-  maps its facts onto that shape in `causal/gnomon_adapter.py` and pins GNOMON as `vendor/gnomon`; no GNOMON code is
-  copied into `src/`.
-- **AXIOM**: the broker pattern (a Lambda that checks rules, then mints a short STS session with a session policy and a
-  proof tag). `authz/broker.py` follows it.
-- **KINTSUGI, TENURE, CASCADE**: credited in the blueprint (section 12, rule D-3), but this repository does not
-  record which patterns each contributed. **The author must fill in those three lines before submission.**
+- [**GNOMON**](https://github.com/suryaprasanthcse/gnomon): a bitemporal causal reasoning engine. HEARTHWARD takes its
+  model of valid intervals `[vf_lo, vf_hi]`, belief sequences `[ts, te)` and watermark progression, maps its facts onto
+  that shape in `src/hearthward/causal/gnomon_adapter.py`, and pins the repository as the `vendor/gnomon` submodule.
+- [**AXIOM**](https://github.com/suryaprasanthcse/AXIOM): the asymmetric broker authorization pattern, in which actions
+  that raise safety fail open and actions that lower protection fail closed behind a cryptographic proof. This is the
+  S+ and S- split and the proof-carrying flow in `src/hearthward/authz/broker.py`.
+- [**KINTSUGI**](https://github.com/suryaprasanthcse/kintsugi-omega-master): the tamper-evident ledger architecture:
+  hash-chained envelopes, a genesis anchor and immutable event auditability. This is the ledger chain in
+  `src/hearthward/contracts/` and `src/hearthward/ingest/ledger.py`.
+- [**TENURE**](https://github.com/suryaprasanthcse/amd-tenure): scoped delegation semantics, the short-lived (900 s)
+  STS executor session bound to an action hash that the broker mints to apply an approved change.
+- [**CASCADE**](https://github.com/suryaprasanthcse/CASCADE-GLOF-Telemetry): multi-source telemetry synchronization,
+  meaning out-of-order event ingestion and absorbing network jitter. This is the late-event and watermark handling in
+  the ingest and causal modules.
+- Supporting spatial and telemetry research by the same author, listed for provenance only (HEARTHWARD does not depend
+  on them):
+  [GOLEM-HY3D-Orchestrator](https://github.com/suryaprasanthcse/GOLEM-HY3D-Orchestrator),
+  [Luminara Spatial Engine](https://github.com/suryaprasanthcse/luminara-spatial-engine) and
+  [Synapse-3D](https://github.com/suryaprasanthcse/SYNAPSE-3D-AA32).
 
 ## AI assistance
 
