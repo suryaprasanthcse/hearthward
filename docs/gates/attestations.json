@@ -18,5 +18,10 @@
     "by": "Surya Prasanth R",
     "at": "2026-10-21",
     "evidence": "AWS Cognito user pool configured on Essentials tier with managed login enabled for RFC 8707 resource binding."
+  },
+  "G2.alexa_discovery_summary": {
+    "by": "Surya Prasanth R",
+    "at": "2026-10-21",
+    "evidence": "RFC 8414 metadata verified locally; advertises S256 code challenge method and authorization_code/refresh_token/client_credentials grant types."
   }
 }
