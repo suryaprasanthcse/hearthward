@@ -9,6 +9,9 @@ dependencies = [
     "boto3",
     "jsonschema>=4.20",
     "rfc8785",
+    "pyjwt>=2.8",
+    "cryptography",
+    "starlette",
 ]
 
 [dependency-groups]

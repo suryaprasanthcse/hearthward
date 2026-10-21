@@ -231,9 +231,12 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "boto3" },
+    { name = "cryptography" },
     { name = "jsonschema" },
     { name = "mcp" },
+    { name = "pyjwt" },
     { name = "rfc8785" },
+    { name = "starlette" },
 ]
 
 [package.dev-dependencies]
@@ -248,9 +251,12 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "boto3" },
+    { name = "cryptography" },
     { name = "jsonschema", specifier = ">=4.20" },
     { name = "mcp", specifier = "==2.3.0" },
+    { name = "pyjwt", specifier = ">=2.8" },
     { name = "rfc8785" },
+    { name = "starlette" },
 ]
 
 [package.metadata.requires-dev]

@@ -24,3 +24,15 @@ def envelope_schema() -> dict[str, Any]:
 def temporal() -> dict[str, Any]:
     """`hearthward:temporal`: epsilon, deltas, lateness, skew and gap parameters (§4.4)."""
     return _load("temporal.json")
+
+
+@cache
+def tools() -> list[dict[str, Any]]:
+    """`hearthward:tools`: the eleven MCP tool definitions served by `tools/list` (§5.3)."""
+    return json.loads((SPEC_DIR / "tools.json").read_bytes())
+
+
+@cache
+def hx() -> list[dict[str, Any]]:
+    """`hearthward:hx`: the HX invariants (§5.4)."""
+    return json.loads((SPEC_DIR / "hx.json").read_bytes())

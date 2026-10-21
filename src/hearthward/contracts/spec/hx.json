@@ -1,0 +1,124 @@
+[
+  {
+    "applies_to": [
+      "S-"
+    ],
+    "enforced_at": "broker",
+    "id": "HX-01",
+    "on_fail": "REQUIRE_DUAL",
+    "statement": "No S- action while an episode is open or intervening, or within cooldown_ms after it closes, unless two distinct circle members approve.",
+    "title": "Open-episode lock"
+  },
+  {
+    "applies_to": [
+      "S-"
+    ],
+    "enforced_at": "broker",
+    "id": "HX-02",
+    "on_fail": "PROOF_REQUIRED",
+    "statement": "An S- action needs a WebAuthn assertion from a passkey registered to a trusted-circle member. A valid Alexa access token alone never suffices: it identifies the household, not the speaker.",
+    "title": "Proof origin"
+  },
+  {
+    "applies_to": [
+      "S-"
+    ],
+    "enforced_at": "broker",
+    "id": "HX-03",
+    "on_fail": "BLOCK",
+    "statement": "The assertion challenge must equal the action hash SHA-256('hw-action-v1' || 0x00 || JCS({tool, args, household, episode_version, nonce, exp})). Any mismatch blocks.",
+    "title": "Action binding"
+  },
+  {
+    "applies_to": [
+      "S-"
+    ],
+    "enforced_at": "broker",
+    "id": "HX-04",
+    "on_fail": "BLOCK",
+    "statement": "Each challenge nonce is consumed by a conditional write before the action runs; a second use blocks. The passkey signature counter must increase.",
+    "title": "Single use"
+  },
+  {
+    "applies_to": [
+      "verify_organization_contact",
+      "call_trusted_contact"
+    ],
+    "enforced_at": "mcp",
+    "id": "HX-05",
+    "on_fail": "BLOCK",
+    "statement": "Phone numbers used to verify or to call come only from verified trusted-circle and trusted-vendor entries or the curated directory, never from tool arguments or conversation text.",
+    "title": "Number provenance"
+  },
+  {
+    "applies_to": [
+      "add_trusted_vendor"
+    ],
+    "enforced_at": "broker",
+    "id": "HX-06",
+    "on_fail": "BLOCK",
+    "statement": "A vendor cannot be added within 24 hours of a visit or consultation that claimed a matching organization name (case-folded, whitespace-normalized).",
+    "title": "Vendor cooling-off"
+  },
+  {
+    "applies_to": [
+      "edit_trusted_circle"
+    ],
+    "enforced_at": "broker",
+    "id": "HX-07",
+    "on_fail": "PROOF_REQUIRED",
+    "statement": "Changing the trusted circle needs proof from an existing member other than the person being added or removed, and every member is notified.",
+    "title": "Circle changes"
+  },
+  {
+    "applies_to": [
+      "pause_monitoring"
+    ],
+    "enforced_at": "broker",
+    "id": "HX-08",
+    "on_fail": "BLOCK",
+    "statement": "A pause lasts at most 24 hours, expires on its own and cannot start or be extended while an episode is open.",
+    "title": "Bounded pause"
+  },
+  {
+    "applies_to": [
+      "S-"
+    ],
+    "enforced_at": "kernel",
+    "id": "HX-09",
+    "on_fail": "REQUIRE_DUAL",
+    "statement": "Every S- action is first applied in a counterfactual branch of the household graph. If it would close an open episode or remove an evidence source, two distinct circle members must approve.",
+    "title": "Simulated effect"
+  },
+  {
+    "applies_to": [
+      "raise_concern",
+      "call_trusted_contact"
+    ],
+    "enforced_at": "mcp",
+    "id": "HX-10",
+    "on_fail": "THROTTLE",
+    "statement": "raise_concern is limited to 6 per hour per household and call_trusted_contact to 3 per episode. A CUSUM on alert volume demotes automatic escalation to notify-only.",
+    "title": "Safety-raising rate limits"
+  },
+  {
+    "applies_to": [
+      "*"
+    ],
+    "enforced_at": "mcp",
+    "id": "HX-11",
+    "on_fail": "BLOCK",
+    "statement": "If the broker, ledger or nonce store is unavailable, every S- tool returns BLOCKED while S+ tools keep working.",
+    "title": "Fail closed only downward"
+  },
+  {
+    "applies_to": [
+      "share_evidence"
+    ],
+    "enforced_at": "broker+iam",
+    "id": "HX-12",
+    "on_fail": "PROOF_REQUIRED",
+    "statement": "Evidence leaves the trusted circle only with proof and the elder's recorded consent in the consent ledger.",
+    "title": "Evidence egress"
+  }
+]

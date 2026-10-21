@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Export the blueprint's runtime contract blocks to JSON that production code reads.
 
-Runtime code never parses markdown: it reads `src/hearthward/contracts/spec/envelope.schema.json` and
-`temporal.json`, which this tool writes from the `hearthward:envelope` and `hearthward:temporal` blocks.
+Runtime code never parses markdown: it reads `src/hearthward/contracts/spec/envelope.schema.json`,
+`temporal.json`, `tools.json` and `hx.json`, which this tool writes from the `hearthward:envelope`,
+`hearthward:temporal`, `hearthward:tools` and `hearthward:hx` blocks.
 The output is byte-deterministic (sorted keys, two-space indent, LF, trailing newline), so a test can
 re-export and compare bytes to catch drift between the blueprint and the committed files.
 
@@ -22,7 +23,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import orrery  # same directory: owns the blueprint parser
 
 OUT_DIR = orrery.ROOT / "src" / "hearthward" / "contracts" / "spec"
-EXPORTS = {"envelope": "envelope.schema.json", "temporal": "temporal.json"}
+EXPORTS = {"envelope": "envelope.schema.json", "temporal": "temporal.json", "tools": "tools.json", "hx": "hx.json"}
 
 
 def render(value: Any) -> bytes:
@@ -43,7 +44,7 @@ def export(spec: dict[str, Any], out_dir: Path = OUT_DIR) -> dict[Path, bytes]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Export hearthward:envelope and hearthward:temporal to JSON.")
+    parser = argparse.ArgumentParser(description="Export the runtime blueprint blocks (envelope, temporal, tools, hx) to JSON.")
     parser.add_argument("--spec", type=Path, default=orrery.BLUEPRINT, help="blueprint to read the blocks from")
     parser.add_argument("--out", type=Path, default=OUT_DIR, help="directory to write the JSON files to")
     parser.add_argument("--check", action="store_true", help="compare with the files on disk instead of writing")

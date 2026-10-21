@@ -16,7 +16,7 @@ pytestmark = pytest.mark.gate_g1
 
 def test_reexport_is_byte_identical_to_the_committed_files(spec: dict[str, Any], tmp_path: Path) -> None:
     written = export_spec.export(spec, tmp_path)
-    assert sorted(p.name for p in written) == ["envelope.schema.json", "temporal.json"]
+    assert sorted(p.name for p in written) == ["envelope.schema.json", "hx.json", "temporal.json", "tools.json"]
     for path, data in written.items():
         assert (specs.SPEC_DIR / path.name).read_bytes() == data == path.read_bytes()
 
@@ -30,7 +30,7 @@ def test_export_is_deterministic(spec: dict[str, Any], tmp_path: Path) -> None:
 def test_exported_bytes_are_lf_terminated_ascii(spec: dict[str, Any]) -> None:
     for name in export_spec.EXPORTS.values():
         data = (specs.SPEC_DIR / name).read_bytes()
-        assert b"\r" not in data and data.endswith(b"}\n") and data.isascii()
+        assert b"\r" not in data and data.endswith((b"}\n", b"]\n")) and data.isascii()
 
 
 def test_runtime_loaders_return_the_blueprint_blocks(spec: dict[str, Any]) -> None:

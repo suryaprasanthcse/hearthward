@@ -1,0 +1,1284 @@
+[
+  {
+    "_meta": {
+      "hearthward/class": "S+"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "description": "Who came to the door recently, from the household's door cameras. Read-only.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "window": {
+          "enum": [
+            "last_15_min",
+            "last_hour",
+            "today"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "window"
+      ],
+      "type": "object"
+    },
+    "name": "get_door_activity",
+    "outputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "data_origin": {
+          "enum": [
+            "live",
+            "synthetic"
+          ],
+          "type": "string"
+        },
+        "summary": {
+          "maxLength": 200,
+          "type": "string"
+        },
+        "visits": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "cameras": {
+                "items": {
+                  "maxLength": 40,
+                  "type": "string"
+                },
+                "maxItems": 4,
+                "type": "array"
+              },
+              "first_seen_ms": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "last_seen_ms": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "open": {
+                "type": "boolean"
+              },
+              "trigger": {
+                "enum": [
+                  "motion_human",
+                  "motion_other",
+                  "button_press"
+                ],
+                "type": "string"
+              },
+              "vehicle_seen": {
+                "enum": [
+                  "yes",
+                  "no",
+                  "unknown"
+                ],
+                "type": "string"
+              },
+              "visit_id": {
+                "pattern": "^vis_[0-9A-HJKMNP-TV-Z]{26}$",
+                "type": "string"
+              },
+              "visitor": {
+                "enum": [
+                  "known_circle",
+                  "known_vendor",
+                  "unknown"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "visit_id",
+              "first_seen_ms",
+              "last_seen_ms",
+              "trigger",
+              "visitor",
+              "open"
+            ],
+            "type": "object"
+          },
+          "maxItems": 20,
+          "type": "array"
+        }
+      },
+      "required": [
+        "visits",
+        "summary",
+        "data_origin"
+      ],
+      "type": "object"
+    },
+    "title": "Door activity"
+  },
+  {
+    "_meta": {
+      "hearthward/class": "S+"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": false
+    },
+    "description": "Get a second opinion on someone at the door or on the phone. Every argument is the customer's report of what the visitor claimed; none of it is treated as verified.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "asked_secrecy": {
+          "type": "boolean"
+        },
+        "claimed_identity_name": {
+          "maxLength": 60,
+          "type": "string"
+        },
+        "claimed_organization": {
+          "maxLength": 80,
+          "type": "string"
+        },
+        "claimed_purpose": {
+          "enum": [
+            "utility",
+            "repair",
+            "delivery",
+            "government",
+            "bank",
+            "charity",
+            "family_member",
+            "other"
+          ],
+          "type": "string"
+        },
+        "claimed_relationship": {
+          "enum": [
+            "none",
+            "grandchild",
+            "child",
+            "other_family",
+            "official",
+            "other"
+          ],
+          "type": "string"
+        },
+        "payment_requested": {
+          "enum": [
+            "none",
+            "cash",
+            "gift_card",
+            "wire",
+            "crypto",
+            "check",
+            "card",
+            "unknown"
+          ],
+          "type": "string"
+        },
+        "urgency_claimed": {
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "name": "assess_visitor",
+    "outputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "data_origin": {
+          "enum": [
+            "live",
+            "synthetic"
+          ],
+          "type": "string"
+        },
+        "episode_id": {
+          "pattern": "^ep_[0-9A-HJKMNP-TV-Z]{26}$",
+          "type": "string"
+        },
+        "evidence_mnats": {
+          "maximum": 100000,
+          "minimum": -100000,
+          "type": "integer"
+        },
+        "reasons": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "enum": [
+                  "NO_VISIT_ON_CAMERA",
+                  "VISIT_IN_PROGRESS",
+                  "NOT_IN_TRUSTED_VENDORS",
+                  "SECRECY_REQUEST",
+                  "IRREVERSIBLE_PAYMENT",
+                  "IDENTITY_MISMATCH",
+                  "URGENCY",
+                  "AUTHORITY_CLAIM",
+                  "VERIFIED_CONTACT"
+                ],
+                "type": "string"
+              },
+              "plain_text": {
+                "maxLength": 140,
+                "type": "string"
+              }
+            },
+            "required": [
+              "code",
+              "plain_text"
+            ],
+            "type": "object"
+          },
+          "maxItems": 5,
+          "type": "array"
+        },
+        "recommended_next_step": {
+          "enum": [
+            "verify_via_official_number",
+            "call_trusted_contact",
+            "decline_politely",
+            "no_action"
+          ],
+          "type": "string"
+        },
+        "risk_level": {
+          "enum": [
+            "low",
+            "elevated",
+            "high"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "risk_level",
+        "reasons",
+        "recommended_next_step",
+        "episode_id",
+        "evidence_mnats",
+        "data_origin"
+      ],
+      "type": "object"
+    },
+    "title": "Second opinion on a visitor or caller"
+  },
+  {
+    "_meta": {
+      "hearthward/class": "S+"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "description": "Look up an organization's official phone number from the household's trusted vendors or the curated directory. Never returns a number supplied by a visitor.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "organization_name": {
+          "maxLength": 80,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "organization_name"
+      ],
+      "type": "object"
+    },
+    "name": "verify_organization_contact",
+    "outputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "advice": {
+          "enum": [
+            "call_official_number",
+            "no_official_record"
+          ],
+          "type": "string"
+        },
+        "data_origin": {
+          "enum": [
+            "live",
+            "synthetic"
+          ],
+          "type": "string"
+        },
+        "display_name": {
+          "maxLength": 80,
+          "type": "string"
+        },
+        "found": {
+          "type": "boolean"
+        },
+        "official_phone_e164": {
+          "pattern": "^\\+[1-9][0-9]{6,14}$",
+          "type": "string"
+        },
+        "source": {
+          "enum": [
+            "trusted_vendors",
+            "curated_directory",
+            "none"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "found",
+        "source",
+        "advice",
+        "data_origin"
+      ],
+      "type": "object"
+    },
+    "title": "Find an organization's official number"
+  },
+  {
+    "_meta": {
+      "hearthward/class": "S+"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "description": "Explain the most recent alert in plain language: what was seen, what was said and how strong the evidence was. Read-only.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {},
+      "type": "object"
+    },
+    "name": "explain_last_alert",
+    "outputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "attestation_digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "belief_seq": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "data_origin": {
+          "enum": [
+            "live",
+            "synthetic"
+          ],
+          "type": "string"
+        },
+        "decided_at_ms": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "episode_id": {
+          "pattern": "^ep_[0-9A-HJKMNP-TV-Z]{26}$",
+          "type": "string"
+        },
+        "evidence_mnats": {
+          "maximum": 100000,
+          "minimum": -100000,
+          "type": "integer"
+        },
+        "intervene_threshold_mnats": {
+          "const": 4554,
+          "type": "integer"
+        },
+        "reasons": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "enum": [
+                  "NO_VISIT_ON_CAMERA",
+                  "VISIT_IN_PROGRESS",
+                  "NOT_IN_TRUSTED_VENDORS",
+                  "SECRECY_REQUEST",
+                  "IRREVERSIBLE_PAYMENT",
+                  "IDENTITY_MISMATCH",
+                  "URGENCY",
+                  "AUTHORITY_CLAIM",
+                  "VERIFIED_CONTACT"
+                ],
+                "type": "string"
+              },
+              "plain_text": {
+                "maxLength": 140,
+                "type": "string"
+              }
+            },
+            "required": [
+              "code",
+              "plain_text"
+            ],
+            "type": "object"
+          },
+          "maxItems": 5,
+          "type": "array"
+        },
+        "state": {
+          "enum": [
+            "none",
+            "open",
+            "intervening",
+            "closed_scam",
+            "closed_benign",
+            "closed_inconclusive",
+            "dismissed"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "state",
+        "reasons",
+        "intervene_threshold_mnats",
+        "data_origin"
+      ],
+      "type": "object"
+    },
+    "title": "Why did Hearthward raise an alert?"
+  },
+  {
+    "_meta": {
+      "hearthward/class": "S+"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": false
+    },
+    "description": "Record a concern about a visitor, call or message. The text is analyzed as untrusted content and can only raise the alert level, never lower it.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "about": {
+          "enum": [
+            "door",
+            "phone",
+            "message",
+            "other"
+          ],
+          "type": "string"
+        },
+        "concern": {
+          "maxLength": 280,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "concern",
+        "about"
+      ],
+      "type": "object"
+    },
+    "name": "raise_concern",
+    "outputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "acknowledged": {
+          "type": "boolean"
+        },
+        "data_origin": {
+          "enum": [
+            "live",
+            "synthetic"
+          ],
+          "type": "string"
+        },
+        "episode_id": {
+          "pattern": "^ep_[0-9A-HJKMNP-TV-Z]{26}$",
+          "type": "string"
+        },
+        "next_step": {
+          "enum": [
+            "monitoring",
+            "family_notified",
+            "call_trusted_contact"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "acknowledged",
+        "episode_id",
+        "next_step",
+        "data_origin"
+      ],
+      "type": "object"
+    },
+    "title": "Tell Hearthward something feels wrong"
+  },
+  {
+    "_meta": {
+      "hearthward/class": "S+"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true,
+      "readOnlyHint": false
+    },
+    "description": "Notify a trusted family member immediately and ask them to call. Uses only numbers stored in the trusted circle.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "contact_role": {
+          "enum": [
+            "primary",
+            "secondary"
+          ],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "name": "call_trusted_contact",
+    "outputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "contact_display_name": {
+          "maxLength": 60,
+          "type": "string"
+        },
+        "data_origin": {
+          "enum": [
+            "live",
+            "synthetic"
+          ],
+          "type": "string"
+        },
+        "ladder_level": {
+          "enum": [
+            "L1",
+            "L2",
+            "L3"
+          ],
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "notified",
+            "already_notified",
+            "no_contact_configured"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "status",
+        "ladder_level",
+        "data_origin"
+      ],
+      "type": "object"
+    },
+    "title": "Bring in family now"
+  },
+  {
+    "_meta": {
+      "hearthward/class": "S-"
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "readOnlyHint": false
+    },
+    "description": "Dismiss an alert as a false alarm. This lowers protection, so it always needs confirmation from a trusted family member's phone.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "episode_id": {
+          "pattern": "^ep_[0-9A-HJKMNP-TV-Z]{26}$",
+          "type": "string"
+        },
+        "reason": {
+          "enum": [
+            "false_alarm",
+            "known_person",
+            "resolved_with_family"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "episode_id",
+        "reason"
+      ],
+      "type": "object"
+    },
+    "name": "dismiss_alert",
+    "outputSchema": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "episode_id": {
+              "pattern": "^ep_[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "proof_hash": {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            },
+            "status": {
+              "const": "DISMISSED",
+              "type": "string"
+            }
+          },
+          "required": [
+            "status",
+            "episode_id",
+            "proof_hash"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "approve_on": {
+              "enum": [
+                "caregiver_phone",
+                "elder_phone"
+              ],
+              "type": "string"
+            },
+            "challenge_id": {
+              "pattern": "^chl_[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "expires_at_ms": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "rules": {
+              "items": {
+                "pattern": "^HX-(0[1-9]|1[0-2])$",
+                "type": "string"
+              },
+              "maxItems": 12,
+              "type": "array"
+            },
+            "spoken_hint": {
+              "maxLength": 160,
+              "type": "string"
+            },
+            "status": {
+              "const": "PROOF_REQUIRED",
+              "type": "string"
+            }
+          },
+          "required": [
+            "status",
+            "challenge_id",
+            "approve_on",
+            "rules",
+            "expires_at_ms",
+            "spoken_hint"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "rules": {
+              "items": {
+                "pattern": "^HX-(0[1-9]|1[0-2])$",
+                "type": "string"
+              },
+              "maxItems": 12,
+              "type": "array"
+            },
+            "spoken_hint": {
+              "maxLength": 160,
+              "type": "string"
+            },
+            "status": {
+              "const": "BLOCKED",
+              "type": "string"
+            }
+          },
+          "required": [
+            "status",
+            "rules",
+            "spoken_hint"
+          ],
+          "type": "object"
+        }
+      ],
+      "type": "object"
+    },
+    "title": "Dismiss an alert"
+  },
+  {
+    "_meta": {
+      "hearthward/class": "S-"
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "idempotentHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": false
+    },
+    "description": "Pause alerts for up to 24 hours. This lowers protection, so it needs confirmation from a trusted family member's phone and expires on its own.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "hours": {
+          "maximum": 24,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "reason": {
+          "enum": [
+            "travel",
+            "visitors",
+            "maintenance",
+            "other"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "hours",
+        "reason"
+      ],
+      "type": "object"
+    },
+    "name": "pause_monitoring",
+    "outputSchema": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "proof_hash": {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            },
+            "status": {
+              "const": "PAUSED",
+              "type": "string"
+            },
+            "until_ms": {
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "status",
+            "until_ms",
+            "proof_hash"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "approve_on": {
+              "enum": [
+                "caregiver_phone",
+                "elder_phone"
+              ],
+              "type": "string"
+            },
+            "challenge_id": {
+              "pattern": "^chl_[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "expires_at_ms": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "rules": {
+              "items": {
+                "pattern": "^HX-(0[1-9]|1[0-2])$",
+                "type": "string"
+              },
+              "maxItems": 12,
+              "type": "array"
+            },
+            "spoken_hint": {
+              "maxLength": 160,
+              "type": "string"
+            },
+            "status": {
+              "const": "PROOF_REQUIRED",
+              "type": "string"
+            }
+          },
+          "required": [
+            "status",
+            "challenge_id",
+            "approve_on",
+            "rules",
+            "expires_at_ms",
+            "spoken_hint"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "rules": {
+              "items": {
+                "pattern": "^HX-(0[1-9]|1[0-2])$",
+                "type": "string"
+              },
+              "maxItems": 12,
+              "type": "array"
+            },
+            "spoken_hint": {
+              "maxLength": 160,
+              "type": "string"
+            },
+            "status": {
+              "const": "BLOCKED",
+              "type": "string"
+            }
+          },
+          "required": [
+            "status",
+            "rules",
+            "spoken_hint"
+          ],
+          "type": "object"
+        }
+      ],
+      "type": "object"
+    },
+    "title": "Pause monitoring"
+  },
+  {
+    "_meta": {
+      "hearthward/class": "S-"
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "idempotentHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": false
+    },
+    "description": "Add a business to the household's trusted vendors. This lowers protection, so it needs confirmation from a trusted family member's phone.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "category": {
+          "enum": [
+            "utility",
+            "repair",
+            "delivery",
+            "medical",
+            "other"
+          ],
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 80,
+          "minLength": 1,
+          "type": "string"
+        },
+        "phone_e164": {
+          "pattern": "^\\+[1-9][0-9]{6,14}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "phone_e164",
+        "category"
+      ],
+      "type": "object"
+    },
+    "name": "add_trusted_vendor",
+    "outputSchema": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "proof_hash": {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            },
+            "status": {
+              "const": "ADDED",
+              "type": "string"
+            },
+            "vendor_id": {
+              "pattern": "^ven_[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "status",
+            "vendor_id",
+            "proof_hash"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "approve_on": {
+              "enum": [
+                "caregiver_phone",
+                "elder_phone"
+              ],
+              "type": "string"
+            },
+            "challenge_id": {
+              "pattern": "^chl_[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "expires_at_ms": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "rules": {
+              "items": {
+                "pattern": "^HX-(0[1-9]|1[0-2])$",
+                "type": "string"
+              },
+              "maxItems": 12,
+              "type": "array"
+            },
+            "spoken_hint": {
+              "maxLength": 160,
+              "type": "string"
+            },
+            "status": {
+              "const": "PROOF_REQUIRED",
+              "type": "string"
+            }
+          },
+          "required": [
+            "status",
+            "challenge_id",
+            "approve_on",
+            "rules",
+            "expires_at_ms",
+            "spoken_hint"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "rules": {
+              "items": {
+                "pattern": "^HX-(0[1-9]|1[0-2])$",
+                "type": "string"
+              },
+              "maxItems": 12,
+              "type": "array"
+            },
+            "spoken_hint": {
+              "maxLength": 160,
+              "type": "string"
+            },
+            "status": {
+              "const": "BLOCKED",
+              "type": "string"
+            }
+          },
+          "required": [
+            "status",
+            "rules",
+            "spoken_hint"
+          ],
+          "type": "object"
+        }
+      ],
+      "type": "object"
+    },
+    "title": "Add a trusted vendor"
+  },
+  {
+    "_meta": {
+      "hearthward/class": "S-"
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "idempotentHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": false
+    },
+    "description": "Add or remove a family member in the trusted circle. This changes who can approve actions, so another member must confirm on their phone.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "display_name": {
+          "maxLength": 60,
+          "minLength": 1,
+          "type": "string"
+        },
+        "operation": {
+          "enum": [
+            "add",
+            "remove"
+          ],
+          "type": "string"
+        },
+        "phone_e164": {
+          "pattern": "^\\+[1-9][0-9]{6,14}$",
+          "type": "string"
+        },
+        "role": {
+          "enum": [
+            "primary",
+            "secondary",
+            "member"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "operation",
+        "display_name",
+        "role"
+      ],
+      "type": "object"
+    },
+    "name": "edit_trusted_circle",
+    "outputSchema": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "proof_hash": {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            },
+            "status": {
+              "const": "UPDATED",
+              "type": "string"
+            }
+          },
+          "required": [
+            "status",
+            "proof_hash"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "approve_on": {
+              "enum": [
+                "caregiver_phone",
+                "elder_phone"
+              ],
+              "type": "string"
+            },
+            "challenge_id": {
+              "pattern": "^chl_[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "expires_at_ms": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "rules": {
+              "items": {
+                "pattern": "^HX-(0[1-9]|1[0-2])$",
+                "type": "string"
+              },
+              "maxItems": 12,
+              "type": "array"
+            },
+            "spoken_hint": {
+              "maxLength": 160,
+              "type": "string"
+            },
+            "status": {
+              "const": "PROOF_REQUIRED",
+              "type": "string"
+            }
+          },
+          "required": [
+            "status",
+            "challenge_id",
+            "approve_on",
+            "rules",
+            "expires_at_ms",
+            "spoken_hint"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "rules": {
+              "items": {
+                "pattern": "^HX-(0[1-9]|1[0-2])$",
+                "type": "string"
+              },
+              "maxItems": 12,
+              "type": "array"
+            },
+            "spoken_hint": {
+              "maxLength": 160,
+              "type": "string"
+            },
+            "status": {
+              "const": "BLOCKED",
+              "type": "string"
+            }
+          },
+          "required": [
+            "status",
+            "rules",
+            "spoken_hint"
+          ],
+          "type": "object"
+        }
+      ],
+      "type": "object"
+    },
+    "title": "Change the trusted circle"
+  },
+  {
+    "_meta": {
+      "hearthward/class": "S-"
+    },
+    "annotations": {
+      "destructiveHint": true,
+      "idempotentHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": false
+    },
+    "description": "Send an alert's evidence to an outside organization such as a bank's fraud team. It needs a family member's confirmation and the elder's recorded consent.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "episode_id": {
+          "pattern": "^ep_[0-9A-HJKMNP-TV-Z]{26}$",
+          "type": "string"
+        },
+        "recipient": {
+          "enum": [
+            "bank_fraud_team",
+            "police_non_emergency"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "episode_id",
+        "recipient"
+      ],
+      "type": "object"
+    },
+    "name": "share_evidence",
+    "outputSchema": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "proof_hash": {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            },
+            "share_id": {
+              "pattern": "^shr_[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "status": {
+              "const": "SHARED",
+              "type": "string"
+            }
+          },
+          "required": [
+            "status",
+            "share_id",
+            "proof_hash"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "approve_on": {
+              "enum": [
+                "caregiver_phone",
+                "elder_phone"
+              ],
+              "type": "string"
+            },
+            "challenge_id": {
+              "pattern": "^chl_[0-9A-HJKMNP-TV-Z]{26}$",
+              "type": "string"
+            },
+            "expires_at_ms": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "rules": {
+              "items": {
+                "pattern": "^HX-(0[1-9]|1[0-2])$",
+                "type": "string"
+              },
+              "maxItems": 12,
+              "type": "array"
+            },
+            "spoken_hint": {
+              "maxLength": 160,
+              "type": "string"
+            },
+            "status": {
+              "const": "PROOF_REQUIRED",
+              "type": "string"
+            }
+          },
+          "required": [
+            "status",
+            "challenge_id",
+            "approve_on",
+            "rules",
+            "expires_at_ms",
+            "spoken_hint"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "rules": {
+              "items": {
+                "pattern": "^HX-(0[1-9]|1[0-2])$",
+                "type": "string"
+              },
+              "maxItems": 12,
+              "type": "array"
+            },
+            "spoken_hint": {
+              "maxLength": 160,
+              "type": "string"
+            },
+            "status": {
+              "const": "BLOCKED",
+              "type": "string"
+            }
+          },
+          "required": [
+            "status",
+            "rules",
+            "spoken_hint"
+          ],
+          "type": "object"
+        }
+      ],
+      "type": "object"
+    },
+    "title": "Share evidence outside the family"
+  }
+]
