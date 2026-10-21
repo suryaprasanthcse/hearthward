@@ -1,15 +1,15 @@
 # HEARTHWARD state
 
-Snapshot for the next session. Details: `docs/gates/G1_COMPLETION_LOG.md` through `G6_COMPLETION_LOG.md`.
+Snapshot for the next session. Details: `docs/gates/G1_COMPLETION_LOG.md` through `G7_COMPLETION_LOG.md`.
 
 ## HEAD
 
-Branch `main`. Latest code commit: `dd88090` (`feat(G6): KMS decision attestation, offline judge verifier, and web
-approval lockfile`), followed by the docs commit that adds the G6 log and this file. Before it: `a1dff48` and `9ac7000`
+Branch `main`. Latest: `a30f831` (`docs(G7): README, MIT license, friction log and product feedback`), then the docs
+commit that adds the G7 log and this file. Before them: `4c356a7` and `dd88090` (G6), `a1dff48` and `9ac7000`
 (G5), `3b95867`, `d0eae7b` (the human's `vendor/gnomon` submodule, `78c8d2e`) and `ac5d770` (G4), `6decd1e` and
 `c4253a1` (G3), `273b995` (G2 PASS). Nothing is pushed (no remotes).
 
-Commit policy: from G6 on, commits carry **no `Co-Authored-By` trailer** (the user is the sole author). Earlier commits
+Commit policy: from G6 on (G6 and G7 included), commits carry **no `Co-Authored-By` trailer** (the user is the sole author). Earlier commits
 keep theirs; history is not rewritten.
 
 ## Gates
@@ -24,11 +24,19 @@ keep theirs; history is not rewritten.
 | G4 | PASS | 115 tests; `vendor/gnomon` pinned at `78c8d2e13c3b` |
 | G5 | INCOMPLETE (exit 3) | everything automated PASS (123 tests); `G5.cloudtrail_proof_hash` is your attestation and needs a deployment |
 | G6 | PASS | all 5 checks; 75 tests (+ 23 node tests inside them); verifier self-test 41/41 |
-| G7 | not started | README sections, OSI license, friction log; `G7.demo_video` and `G7.devpost_submitted` are yours |
+| G7 | INCOMPLETE (exit 3) | `G7.readme`, `G7.license`, `G7.docs` PASS; `G7.demo_video` and `G7.devpost_submitted` are yours |
 
 Full suite: 919 tests. Gate variables: five for G2, three for G3, three for G5, `HW_ANCHOR_BUCKET` for G6
 (`hearthward-compliance-anchors` is accepted); synthetic values are in `tests/g2_support.py`, `tests/g5_support.py` and
 the G3, G5 and G6 logs.
+
+## G7 deliverables
+
+- `README.md` (all six required sections and the synthetic-data disclosure), `LICENSE` (MIT, the author's choice to
+  confirm), `docs/friction-log.md` and `docs/product-feedback.md`. No performance number appears anywhere (D-5).
+- **Before submitting:** the README's "Earlier repositories" lists KINTSUGI, TENURE and CASCADE with no patterns,
+  because the repository does not record them; the author must fill those three lines in. Re-read the AI-assistance
+  paragraph and the "built during the submission window" sentence. Update the status banner once anything is deployed.
 
 ## G6 deliverables
 
@@ -57,9 +65,9 @@ the G3, G5 and G6 logs.
 
 ## Open items
 
-- Human: finish G3 (deploy, `--probe`, simulator attestation) and G5 (`G5.cloudtrail_proof_hash`); G7 attestations.
-- G7: README (Setup, Run, Tracks, Built during the submission window, AI assistance, Synthetic data), an OSI license,
-  the friction log; then the demo video and submission.
+- Human: finish G3 (deploy, `--probe`, simulator attestation) and G5 (`G5.cloudtrail_proof_hash`); G7: the demo video
+  (under 180 s, public URL, synthetic-data disclosure on screen) and the Devpost submission, each attested.
+- Human: fill in the KINTSUGI, TENURE and CASCADE credits in the README (rule D-3).
 - Build and deploy: the broker Lambda and approval endpoints, executor role, ladder state machine and its Lambdas,
   passkey registration, a real `FactsProvider`, the anchor job and Object Lock bucket; add them to the CDK stack.
 - Fusion step that builds §9 decision records and signs them; publish the attest-signer public key for judges.
