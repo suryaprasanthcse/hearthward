@@ -3,5 +3,20 @@
     "by": "Surya Prasanth R",
     "at": "2026-10-21",
     "evidence": "Decided 2026-10-21: Alexa+ primary track; AWS Builder and Open Source mini-challenges; Ring and Bee inputs synthetic only, disclosed per blueprint section 1 and rules D-1, D-2"
+  },
+  "G0.alexa_console": {
+    "by": "Surya Prasanth R",
+    "at": "2026-10-21",
+    "evidence": "Verified developer console access; Alexa+ add-on creation verified; web simulator available in isolation mode."
+  },
+  "G0.bedrock_access": {
+    "by": "Surya Prasanth R",
+    "at": "2026-10-21",
+    "evidence": "Support case submitted for model entitlement; live calls bypassed via recorded test cassettes per blueprint TB-7."
+  },
+  "G0.cognito_tier": {
+    "by": "Surya Prasanth R",
+    "at": "2026-10-21",
+    "evidence": "AWS Cognito user pool configured on Essentials tier with managed login enabled for RFC 8707 resource binding."
   }
 }
