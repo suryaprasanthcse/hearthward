@@ -185,3 +185,34 @@ through a VPC link to an internal ALB and a Fargate service; outputs for the eig
   PKCE enforcement on the client.
 - Pin the image dependencies; decide where the Alexa service client's secret digest comes from (Secrets Manager).
 - G4: the SPRT decision core. G5: the broker, which is what may write `SecurityState`.
+
+## Deployment and live probe (added 2026-10-21, after the deploy)
+
+The author asked for the stack to be deployed and probed. It was: CDK bootstrap in us-east-1, then
+`cdk deploy --all --outputs-file cdk-outputs.json` from `infra/` (CLI 2.1146.0 through `npx`), which created
+`Hearthward-dev` in 293 s of stack time. Before that, `cdk synth` through the real CLI had warned that the ECS service
+had no deployment circuit breaker; it was enabled (and tested) so that a bad image rolls back instead of hanging.
+
+The eight gate variables were read from the stack outputs, checked against the pipeline's `ENV_RULES` (all well formed)
+and written to the git-ignored `.env`. Then `uv run python tools/pipeline.py --only G3 --probe` gave (exit 3):
+
+```
+== G3 | Deployed and linked ==
+  PASS     G3.infra                     3 paths present
+  PASS     G3.env                       3 variables set and well-formed
+  PASS     G3.probe                     metadata documents agree, S256 advertised, /mcp answers 401 without WWW-Authenticate
+  MANUAL   G3.simulator_linking         add G3.simulator_linking with by, at and evidence to docs\gatesttestations.json
+gate G3: INCOMPLETE
+```
+
+Direct requests to the deployed endpoints agreed: the protected-resource document names the facade as its authorization
+server, the facade advertises `S256`, `/jwks` returns the KMS-backed ES256 public key, `/authorize` answers 302 to the
+Cognito managed-login domain, `POST /mcp` without a token returns 401 `invalid_token` (no `WWW-Authenticate`), and
+`GET /mcp` and `POST /mcp/` return 404 with no redirect. The Fargate service is ACTIVE (1 of 1 running, rollout
+COMPLETED) and its ALB target is healthy.
+
+`G3.simulator_linking` stays MANUAL. It is an attestation that the account was linked in the Alexa+ simulator; a passing
+probe does not show that, and it was not written. What is still unsettled: an authenticated `/mcp` call (the Host header
+API Gateway forwards), the facade's `client_credentials` (no service-client digest is configured), Cognito and a repeated
+`resource`, the `aud` and scope Cognito issues, PKCE enforcement, and the Cognito client's callback URLs, which are still
+placeholders.

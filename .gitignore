@@ -150,3 +150,6 @@ $RECYCLE.BIN/
 
 # ── Agent tooling (local-only settings) ──────────────────────────────────
 .claude/settings.local.json
+
+# CDK deployment outputs (deploy-specific)
+cdk-outputs.json

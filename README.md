@@ -6,10 +6,12 @@ ratio test over a scam-script hidden Markov model, so the error budget is explic
 room lower the household's protection: anything that lowers protection (dismissing an alert, pausing monitoring,
 trusting a new vendor, changing the family circle, sharing evidence) needs a passkey approval from a family member.
 
-> **Status, 2026-10-21.** The code, tests and infrastructure definition are complete and pass their automated gates.
-> **Nothing is deployed yet and nothing has been run against a live Alexa+ account.** The deployed endpoints, the
-> Alexa+ simulator account linking and the demo video are still to do. `STATE.md` has the current gate table, and
-> `docs/gates/` has a completion log for each gate.
+> **Status, 2026-10-21.** The code and tests pass their automated gates, and the CDK stack is **deployed to AWS
+> (us-east-1)**. The gate's live probe passes against the deployed endpoints: the protected-resource metadata and the
+> facade's S256 metadata are served, and an unauthenticated `POST /mcp` gets `401` with no `WWW-Authenticate`.
+> **Nothing has been run against a live Alexa+ account yet**: linking the account in the Alexa+ simulator, the broker
+> and ladder deployment, and the demo video are still to do. `STATE.md` has the current gate table, and `docs/gates/`
+> has a completion log for each gate.
 
 ## Synthetic data
 

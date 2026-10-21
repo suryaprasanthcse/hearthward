@@ -21,7 +21,7 @@ in `docs/gates/*.md` is a pre-rewrite hash**; `docs/gates/COMMIT_MAP.md` maps ea
 | G0 | PASS | human attestations recorded in `2f5ad88` |
 | G1 | PASS | 360 tests |
 | G2 | PASS | 191 tests; alexa discovery summary attested (`99a0dbb`) |
-| G3 | INCOMPLETE (exit 3) | `G3.infra`, `G3.env` PASS; `G3.probe` needs a deployment and `--probe`; `G3.simulator_linking` is yours; 55 tests |
+| G3 | INCOMPLETE (exit 3) | **Deployed 2026-10-21 (us-east-1); `G3.infra`, `G3.env`, `G3.probe` (live, `--probe`) PASS**; only `G3.simulator_linking` (yours) is open; 56 tests |
 | G4 | PASS | 115 tests; `vendor/gnomon` pinned at `78c8d2e13c3b` |
 | G5 | INCOMPLETE (exit 3) | everything automated PASS (123 tests); `G5.cloudtrail_proof_hash` is your attestation and needs a deployment |
 | G6 | PASS | all 5 checks; 75 tests (+ 23 node tests inside them); verifier self-test 41/41 |
@@ -63,6 +63,19 @@ the G3, G5 and G6 logs.
 - HX-04 refuses a passkey counter that does not increase, so passkeys that always report 0 cannot approve.
 - The web app has no npm dependencies (hard rule 3: PyPI only); adding one needs someone allowed to reach npm.
 - Tests that edit session-wide fixtures (`spec`, `orrery_runs`) must deep-copy them first.
+
+## Deployment (2026-10-21)
+
+- Stack `Hearthward-dev` in us-east-1, CDK bootstrapped there the same day. Outputs are in `infra/cdk-outputs.json` and the
+  eight G2/G3 gate variables are in `.env` (both git-ignored). The stack does not create the G5 variables
+  (`HW_BROKER_EXECUTOR_ROLE_ARN`, `HW_WEBAUTHN_RP_ID`, `HW_LADDER_STATE_MACHINE_ARN`) or `HW_ANCHOR_BUCKET`.
+- Live: `GET /.well-known/oauth-protected-resource` and the facade's `/.well-known/oauth-authorization-server` and `/jwks`
+  (served with a KMS-held key), `/authorize` 302 to Cognito managed login, `POST /mcp` without a token 401 with no
+  `WWW-Authenticate`, `GET /mcp` and `POST /mcp/` 404 (no redirect). The Fargate task is running and the ALB target is healthy.
+- Not exercised live: any authenticated `/mcp` call (so the Host-header question is still open), the facade's
+  `client_credentials` (no service-client digest is configured, so it rejects every login), Cognito's `resource`
+  handling, and Alexa+ account linking (the Cognito client's callback URLs are still `SYNTHETICPLACEHOLDER`).
+- The stack bills hourly (NAT gateway, ALB, Fargate) and most resources are set to retain on delete.
 
 ## Open items
 
