@@ -201,7 +201,7 @@ and written to the git-ignored `.env`. Then `uv run python tools/pipeline.py --o
   PASS     G3.infra                     3 paths present
   PASS     G3.env                       3 variables set and well-formed
   PASS     G3.probe                     metadata documents agree, S256 advertised, /mcp answers 401 without WWW-Authenticate
-  MANUAL   G3.simulator_linking         add G3.simulator_linking with by, at and evidence to docs\gatesttestations.json
+  MANUAL   G3.simulator_linking         add G3.simulator_linking with by, at and evidence to docs\gates\attestations.json
 gate G3: INCOMPLETE
 ```
 
