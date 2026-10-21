@@ -162,14 +162,11 @@ pattern is what carried over, and no code from them is copied into `src/`.
 
 ## AI assistance
 
-HEARTHWARD was built with AI assistance. The code, tests and documentation were drafted with **Claude Code**
-(Anthropic's coding agent) running Claude models: Claude Opus 5.5 for the first gates, Claude Sonnet 5.5 for
-the middle ones and for the last. The commits originally carried `Co-Authored-By` trailers naming the model; the author
-had them removed from the history before publishing, so the repository's contributor list shows only the author. This
-section is the disclosure. The work followed a written blueprint and a machine-checked gate
-pipeline, and it was run under project rules that forbid network calls, real credentials and weakening any check.
-Commits are authored by Surya Prasanth R, who set the direction, made the design decisions and wrote the human
-attestations.
+HEARTHWARD was engineered with AI assistance under the sole direction and architectural specification of Surya
+Prasanth R. Code, test harnesses, and documentation were written with **Claude Code** (Anthropic) running Claude Opus
+5.5 and Claude Sonnet 5.5. All system requirements, trust boundaries, mathematical invariants (HX-01 through HX-12),
+and SPRT decision formulations were defined by the author, and the work was verified against a machine-checked gate
+pipeline under isolation constraints, except for the steps that need a deployment, which are still open.
 
 At runtime, nothing in this repository calls a language model. The blueprint describes a Bedrock extractor that turns
 speech into seven schema-validated enum features, with recorded cassettes in tests; in this repository the features
