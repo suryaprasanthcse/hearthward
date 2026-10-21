@@ -318,3 +318,9 @@ def test_no_allow_statement_in_the_stack_grants_every_action(cfn: dict[str, Any]
             if statement["Effect"] == "Allow":
                 assert "*" not in as_list(statement["Action"])
                 assert not any(str(a).endswith(":*") for a in as_list(statement["Action"]))
+
+
+def test_a_task_that_cannot_start_fails_the_deployment_fast_and_rolls_back(cfn: dict[str, Any]) -> None:
+    (service,) = resources(cfn, "AWS::ECS::Service").values()
+    breaker = service["Properties"]["DeploymentConfiguration"]["DeploymentCircuitBreaker"]
+    assert breaker == {"Enable": True, "Rollback": True}

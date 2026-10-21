@@ -154,7 +154,9 @@ class HearthwardStack(cdk.Stack):
         cluster = ecs.Cluster(self, "Cluster", vpc=self.vpc, container_insights_v2=ecs.ContainerInsights.ENABLED)
         self.mcp_service = patterns.ApplicationLoadBalancedFargateService(
             self, "McpService", cluster=cluster, cpu=512, memory_limit_mib=1024, desired_count=1,
-            public_load_balancer=False, listener_port=80, protocol=elbv2.ApplicationProtocol.HTTP,
+            public_load_balancer=False, listener_port=80,
+            circuit_breaker=ecs.DeploymentCircuitBreaker(enable=True, rollback=True),  # a bad image fails fast and rolls back
+            protocol=elbv2.ApplicationProtocol.HTTP,
             task_image_options=patterns.ApplicationLoadBalancedTaskImageOptions(
                 image=ecs.ContainerImage.from_asset(str(ROOT), file="infra/Dockerfile.mcp"),
                 container_port=MCP_PORT, container_name="mcp",
