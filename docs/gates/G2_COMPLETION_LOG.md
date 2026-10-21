@@ -5,15 +5,18 @@ brief states; `CLAUDE.md` names Opus 5.5 as the main-session model, see Deviatio
 
 - **Starting state:** branch `main`, tree clean, HEAD `2f5ad88` "docs(G0): record developer attestations for
   console, bedrock, and cognito".
-- **Result:** every automated G2 check passes. `G2.alexa_discovery_summary` is a human attestation (hard rule 5)
-  and stays MANUAL, so the gate reports INCOMPLETE (exit 3).
+- **Result:** **G2 PASS (exit 0).** Every automated check passed on the first run. `G2.alexa_discovery_summary` is a
+  human attestation (hard rule 5), so that run reported INCOMPLETE (exit 3) until Surya Prasanth R recorded it on
+  2026-10-21. A second run after the attestation commit reports `summary: F PASS, G0 PASS, G1 PASS, G2 PASS`.
 
 ## Commits created
 
 | Hash | Message |
 |---|---|
 | `813e6d6f148ad71af60fde55b498fdc4dda36f84` | feat(G2): Streamable HTTP MCP server, RFC 8414 OAuth facade, and S+ tools |
-| (this commit) | docs(G2): completion log and state snapshot |
+| `4d7506b` | docs(G2): completion log and state snapshot |
+| `99a0dbb` | docs(G2): record alexa discovery summary attestation (human-written `attestations.json`, committed on request) |
+| (this commit) | docs(G2): update state and log to reflect G2 PASS |
 
 Gate F was run (PASS) before the feat commit. Paths were staged explicitly. No push, remote, amend, rebase or force.
 
@@ -31,7 +34,7 @@ Gate F was run (PASS) before the feat commit. Paths were staged explicitly. No p
 Full suite: `uv run pytest` gives 551 passed (360 gate_g1 + 191 gate_g2). No network is used: tokens are minted
 with throwaway local keys, the Cognito token endpoint is an injected fake, and every value is synthetic.
 
-## `uv run python tools/pipeline.py --gate G2 --keep-going` (exit 3)
+## `uv run python tools/pipeline.py --gate G2 --keep-going`, before the attestation (exit 3)
 
 Run with the five G2 variables set to synthetic values shaped like the pipeline's rules (the values are listed in
 `tests/g2_support.py`; none names a real resource).
@@ -80,7 +83,55 @@ gate G2: INCOMPLETE
 summary: F PASS, G0 PASS, G1 PASS, G2 INCOMPLETE
 ```
 
-(The pipeline's own `exit=3` line is "incomplete: awaiting attestation".)
+(Exit 3 means incomplete: awaiting attestation.)
+
+## `uv run python tools/pipeline.py --gate G2 --keep-going`, after the attestation (exit 0)
+
+Same five synthetic variables. Only the G2 attestation line and the totals differ from the run above.
+
+```
+== F | Foundation ==
+  PASS     F.files                      4 paths present
+  PASS     F.gitattributes              fixtures/**, *.json and *.jsonl have text unset (no CRLF rewrites)
+  PASS     F.blocks                     5 blocks parse
+  PASS     F.contracts                  11 tools (6 S+, 5 S-), 17 rules, 0 findings
+  PASS     F.hx                         HX-01..HX-12 well-formed; every S- tool covered
+  PASS     F.sprt                       A = +4.5539, B = -2.9857; stochastic, left-to-right, benign = H0, negative terms verified only
+  PASS     F.temporal                   Ring lateness covers its retry window; max_skew matches GNOMON
+  PASS     F.envelope                   envelope schema uses the portable keyword subset
+  PASS     F.orrery                     6 scenarios deterministic and as specified; 59 envelopes valid; chains intact
+  PASS     F.gates                      every gate has a row in blueprint section 10
+  PASS     F.secrets                    64 tracked or new files scanned, no secrets
+gate F: PASS
+
+== G0 | Environment and pins ==
+  PASS     G0.pyproject                 requires-python >=3.12,<3.13; mcp==2.3.0
+  PASS     G0.python_version            .python-version 3.12
+  PASS     G0.lockfile                  uv.lock pins mcp 2.3.0
+  PASS     G0.env_example               12 gate variables named, no values
+  PASS     G0.interpreter               running on Python 3.12.14
+  PASS     G0.alexa_console             attested by Surya Prasanth R on 2026-10-21
+  PASS     G0.bedrock_access            attested by Surya Prasanth R on 2026-10-21
+  PASS     G0.cognito_tier              attested by Surya Prasanth R on 2026-10-21
+  PASS     G0.track_posture             attested by Surya Prasanth R on 2026-10-21
+gate G0: PASS
+
+== G1 | Contracts and ingest ==
+  PASS     G1.modules                   5 paths present
+  PASS     G1.fixtures                  4 fixtures byte-identical to HEAD, text unset
+  PASS     G1.tests                     pytest -m gate_g1: 360 passed, 191 deselected in 54.07s
+gate G1: PASS
+
+== G2 | MCP server and facade ==
+  PASS     G2.modules                   7 paths present
+  PASS     G2.env                       5 variables set and well-formed
+  PASS     G2.schema_drift              11 served tool schemas identical to the blueprint
+  PASS     G2.tests                     pytest -m gate_g2: 191 passed, 360 deselected in 4.28s
+  PASS     G2.alexa_discovery_summary   attested by Surya Prasanth R on 2026-10-21
+gate G2: PASS
+
+summary: F PASS, G0 PASS, G1 PASS, G2 PASS
+```
 
 ## What was built
 
@@ -138,7 +189,6 @@ summary: F PASS, G0 PASS, G1 PASS, G2 INCOMPLETE
 
 ## Open items for the next session
 
-- **Human:** attest `G2.alexa_discovery_summary` in `docs/gates/attestations.json` (hard rule 5).
 - **§7.4 questions that need a deployed endpoint** (hard rule 3 forbids network use here):
   1. Does Alexa+ need Tier 1 for a public MCP server?
   2. Does Cognito's token endpoint accept a repeated `resource`? The facade forwards the form byte for byte for

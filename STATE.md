@@ -5,7 +5,8 @@ Snapshot for the next session. Details: `docs/gates/G1_COMPLETION_LOG.md`, `docs
 ## HEAD
 
 Branch `main`. G2 code is commit `813e6d6` (`feat(G2): Streamable HTTP MCP server, RFC 8414 OAuth facade, and S+
-tools`); the docs commit after it adds this file and the G2 log. Nothing is pushed (no remotes).
+tools`), then `4d7506b` (this file and the G2 log), `99a0dbb` (the G2 attestation) and the docs commit that records
+G2 PASS. Nothing is pushed (no remotes).
 
 ## Gates
 
@@ -14,7 +15,7 @@ tools`); the docs commit after it adds this file and the G2 log. Nothing is push
 | F | PASS | run before every commit: `uv run python tools/pipeline.py --only F` |
 | G0 | PASS | human attestations recorded in `2f5ad88` |
 | G1 | PASS | 360 tests |
-| G2 | INCOMPLETE | all automated checks pass (191 tests); `G2.alexa_discovery_summary` awaits the human |
+| G2 | PASS | 191 tests; `G2.alexa_discovery_summary` attested by Surya Prasanth R on 2026-10-21 (`99a0dbb`); `--gate G2 --keep-going` exits 0 |
 | G3+ | not started | G3 needs CDK, deployed endpoints and the AWS-side items below |
 
 G2 needs the five variables from `.env.example` set (synthetic values are in `tests/g2_support.py`):
@@ -35,7 +36,6 @@ G2 needs the five variables from `.env.example` set (synthetic values are in `te
 
 ## Open items
 
-- Human: attest `G2.alexa_discovery_summary` in `docs/gates/attestations.json`.
 - G3: KMS `facade-token-signer`, Secrets Manager for the Alexa service client, deployed answers to blueprint §7.4,
   confirm Cognito `aud`/scope behaviour (see the G2 log), DynamoDB-backed household store.
 - G4: replace the stand-in scorer in `mcp/tools_splus.py` with the SPRT decision core.
