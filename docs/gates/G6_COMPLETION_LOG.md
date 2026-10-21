@@ -98,6 +98,12 @@ the bytes parsed. It never re-canonicalizes the signed bytes; it only recomputes
 chain is defined over canonical JSON. A bundle (`public_key_b64`, `decision`, `ledger`, optional `anchor`,
 `sprt_params`, `decision_digest`) is described in the file's docstring.
 
+## Addendum: the radar page (2026-10-21)
+
+After G6 passed, `web/index.html` was added (see `STATE.md`, "Radar UI"). It adds `web/src/{radar,radar_logic,fluid,radar_data}.js`,
+`radar.css`, `tools/export_ui_scenario.py` and tests: `gate_g6` is now **86** tests (+11) and `web/` has **40** node tests; the full
+suite is 930. `--only G6` still passes.
+
 ## Deviations and architectural notes
 
 1. **The web app has no dependencies, on purpose.** Hard rule 3 allows PyPI only, and `npm install` of any package

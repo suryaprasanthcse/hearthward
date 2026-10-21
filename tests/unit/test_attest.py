@@ -427,7 +427,7 @@ def test_the_lockfile_is_present_tracked_and_has_no_dependencies() -> None:
     assert tracked.returncode == 0, "web/package-lock.json must be tracked (git add it)"
 
 
-@pytest.mark.parametrize("page", ["approve.html", "verify.html"])
+@pytest.mark.parametrize("page", ["approve.html", "verify.html", "index.html"])
 def test_pages_have_a_strict_csp_and_no_inline_script_or_remote_resource(page: str) -> None:
     html = (WEB / page).read_text(encoding="utf-8")
     csp = re.search(r'http-equiv="Content-Security-Policy" content="([^"]+)"', html)
