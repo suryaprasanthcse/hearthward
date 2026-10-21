@@ -56,3 +56,22 @@ than fixed in code. Rule 6 forbids editing the `hearthward:*` blocks or check se
   unverified-facts register.
 - **Needs a decision:** add it to §13 so it gets settled when real Ring access exists. That is out of scope, since
   DOOR is synthetic only.
+
+## SQ-6. `G4.submodule`: `vendor/gnomon` cannot be added from inside this project (G4)
+
+- **What:** `pipeline.py:g4_submodule` passes only when `.gitmodules` has `path = vendor/gnomon` and `git submodule
+  status` shows that path initialized at its recorded commit. No such submodule exists, so the check reports PENDING
+  ("vendor/gnomon is not a submodule yet"). A `.gitmodules` entry without a clone would turn PENDING into FAIL, and
+  faking either would be weakening the check (hard rule 7), so nothing was added.
+- **Evidence:** the blueprint names GNOMON as a pinned submodule (§2, §4.4, §10 G4) but gives no repository URL or
+  commit. The only copy known to this machine is the sibling folder `C:\myspace\hacckathons\gnomon`, which the
+  isolation rule forbids touching. A clone from a remote needs the network (hard rule 3 allows PyPI only).
+- **Done meanwhile:** the causal engine is complete behind the `CausalStore` port. `GnomonCausalStore` implements the
+  §4.4 mapping (`vf = vf_lo`, `vf_hi` property, `[ts, te)`) over a narrow `GnomonBackend` protocol with an in-memory
+  backend, so the interval relations, watermarks, BT-1 to BT-4 and the record shape are tested now. Binding the
+  protocol to the FalkorDB tenant graph `t:hh:<id>` and the kernel UDFs is the part that needs the real GNOMON source.
+- **Needs a decision:** either (a) you add the submodule yourself (`git submodule add <GNOMON url> vendor/gnomon`
+  at the commit to pin) or give the URL, commit and permission for that one clone; or (b) take blueprint cut **C3**
+  (the reference store behind the port instead of GNOMON), which §11 triggers at H32 and which you record in
+  `docs/gates/cuts.md`. Under (b) the pipeline would still need a decision about this check, which this session may
+  not make.
