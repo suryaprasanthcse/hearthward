@@ -1,18 +1,21 @@
 # G4 completion log
 
-Gate G4 (causal engine and decision core) executed by the main session (Claude Sonnet 5.5). **G4 is INCOMPLETE
-(exit 3) because of one check: `G4.submodule`.** Modules, conformance and tests all pass.
+Gate G4 (causal engine and decision core) executed by the main session (Claude Sonnet 5.5). **G4 PASS (exit 0).**
+The session first ended with one check open, `G4.submodule`, because the submodule could not be added from inside
+this project; the human added it in `d0eae7b` and the gate then passed. Both runs are below.
 
 - **Starting state:** branch `main`, tree clean, HEAD `6decd1e`; F, G0, G1, G2 PASS; G3 INCOMPLETE (its deployment
   probe and simulator attestation are yours to finish).
-- **Result:** `G4.modules` PASS, `G4.conformance` PASS, `G4.tests` PASS, `G4.submodule` PENDING.
+- **Result:** all four G4 checks PASS after `d0eae7b` (first run: three PASS, `G4.submodule` PENDING).
 
 ## Commits created
 
 | Hash | Message |
 |---|---|
 | `ac5d77018daf8e6ffb40d0236db04ba812ea390a` | feat(G4): Causal engine, GNOMON adapter, and SPRT decision core |
-| (this commit) | docs(G4): completion log, state snapshot and the submodule blocker |
+| `f93721c` | docs(G4): completion log, state snapshot and the submodule blocker |
+| `d0eae7b` | feat(G4): link vendor/gnomon submodule (human; pins `vendor/gnomon` at `78c8d2e13c3be526a010d2b3558b4ac04fd2cded`) |
+| (this commit) | docs(G4): update state, log, and blockers to reflect G4 PASS |
 
 Gate F was run (PASS) before the feat commit. Paths were staged explicitly. No push, remote, amend, rebase or force.
 
@@ -36,7 +39,7 @@ Conformance, checked three ways:
   100 random sequences. The arithmetic and its order are the orrery's, so there is no floating-point drift to hide
   behind rounding.
 
-## `uv run python tools/pipeline.py --only G4` (exit 3)
+## `uv run python tools/pipeline.py --only G4`, before the submodule (exit 3)
 
 ```
 == G4 | Causal engine and decision core ==
@@ -49,7 +52,7 @@ gate G4: INCOMPLETE
 summary: G4 INCOMPLETE
 ```
 
-## `uv run python tools/pipeline.py --gate G4 --keep-going` (exit 3), G2 onward
+## `uv run python tools/pipeline.py --gate G4 --keep-going`, before the submodule (exit 3), G2 onward
 
 Run with the five G2 and three G3 synthetic variables set. F, G0 and G1 were PASS in the same run (F.secrets: 87
 files scanned, no secrets; G1.tests: 360 passed).
@@ -80,16 +83,34 @@ gate G4: INCOMPLETE
 summary: F PASS, G0 PASS, G1 PASS, G2 PASS, G3 INCOMPLETE, G4 INCOMPLETE
 ```
 
-## Why `G4.submodule` is not done
+## `uv run python tools/pipeline.py --only G4`, after the submodule (exit 0)
 
-The brief asks to configure and initialize `vendor/gnomon`. This session could not, without breaking `CLAUDE.md`:
-the blueprint gives no GNOMON URL or commit; the only copy known here is the sibling folder
-`C:\myspace\hacckathons\gnomon`, which the isolation rule forbids touching; and a clone from a remote is a network
-call outside PyPI (hard rule 3). A `.gitmodules` entry with no clone would make the check FAIL, and any workaround
-would weaken it (hard rule 7), so nothing was added. The evidence and the two ways forward (you add the submodule, or
-cut C3) are in `docs/gates/BLOCKERS.md` as **SQ-6**. To finish: run
-`git submodule add <GNOMON url> vendor/gnomon` at the commit to pin (or give me the URL, commit and permission), then
-`uv run python tools/pipeline.py --only G4`.
+Re-run by the main session after `d0eae7b`:
+
+```
+== G4 | Causal engine and decision core ==
+  PASS     G4.submodule                 vendor/gnomon pinned at 78c8d2e13c3b
+  PASS     G4.modules                   6 paths present
+  PASS     G4.conformance               6 conformance vectors match the orrery to the milli-nat
+  PASS     G4.tests                     pytest -m gate_g4: 115 passed, 606 deselected in 9.07s
+gate G4: PASS
+
+summary: G4 PASS
+```
+
+Test counts are unchanged: 115 gate_g4 tests (71 in `test_decision.py`, 44 in `test_causal.py`), 721 in the full
+suite.
+
+## How `G4.submodule` was resolved
+
+The session could not add `vendor/gnomon` itself: the blueprint gives no GNOMON URL or commit, the only copy known
+here is the sibling folder `C:\myspace\hacckathons\gnomon` (off limits under the isolation rule), and a clone from a
+remote needs the network (hard rule 3). A `.gitmodules` entry without a clone would have turned PENDING into FAIL, so
+nothing was added and the evidence went into `BLOCKERS.md` as SQ-6. The human then added the submodule in `d0eae7b`
+(`.gitmodules`: `path = vendor/gnomon`, `url = ../gnomon`, pinned at `78c8d2e13c3be526a010d2b3558b4ac04fd2cded`).
+SQ-6 was removed from `BLOCKERS.md` in the commit that records this. Two things to know: the relative URL
+`../gnomon` resolves against this repository's remote, and there is none, so the submodule currently points at the
+sibling folder on this machine; and this session still has not read anything under `vendor/gnomon`.
 
 ## What was built
 
@@ -104,7 +125,7 @@ cut C3) are in `docs/gates/BLOCKERS.md` as **SQ-6**. To finish: run
 
 ## Deviations and architectural notes
 
-1. **The GNOMON adapter is not bound to GNOMON yet.** It implements the blueprint's mapping (`vf = vf_lo`, `vf_hi`
+1. **The GNOMON adapter is still not bound to GNOMON.** It implements the blueprint's mapping (`vf = vf_lo`, `vf_hi`
    as an extra property, belief bounds `[ts, te)`) against a narrow backend protocol. I wrote that protocol without
    seeing GNOMON's code, so it describes the *record shape* the blueprint states, not GNOMON's real API (graph
    queries, `GRAPH.UDF LOAD`, audits K1 to K9). Expect a thin translation layer when the submodule arrives.
@@ -129,7 +150,9 @@ cut C3) are in `docs/gates/BLOCKERS.md` as **SQ-6**. To finish: run
 
 ## Open items
 
-- **Human:** decide SQ-6 (the GNOMON submodule); finish G3 (deploy, `--probe`, simulator attestation).
+- **Human:** finish G3 (deploy, `--probe`, simulator attestation).
+- Bind `GnomonBackend` to GNOMON's real API now that the source is vendored (read it first; the protocol was written
+  from the blueprint, not from GNOMON).
 - Replace the stand-in scorer with `Accumulator` behind the S+ tools and back the store with the ledger.
 - §6.8 calibration: the parameters are priors until fitted on a labeled replay corpus; `tpr`/`fpr` come from held-out
   data. `A` and `B` ship from replay-measured false-alarm rates, through the `hearthward:sprt` block only.
