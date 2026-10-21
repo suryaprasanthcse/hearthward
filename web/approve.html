@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>Approve a change</title>
+  <link rel="stylesheet" href="src/page.css">
+</head>
+<body>
+  <main>
+    <h1>Approve a change</h1>
+    <p>Someone asked HEARTHWARD to make this change to a household's protection. It happens only if you approve it with your passkey.</p>
+    <p id="summary" class="summary">Loading...</p>
+    <button id="approve" type="button" disabled>Approve with my passkey</button>
+    <p id="status" role="status"></p>
+    <p class="note">Synthetic demonstration data. Your passkey signs the exact action shown; nothing else can be approved with it.</p>
+  </main>
+  <script type="module" src="src/approve_page.js"></script>
+</body>
+</html>

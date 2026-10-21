@@ -1,0 +1,13 @@
+{
+  "name": "hearthward-web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "HEARTHWARD caregiver web view: the passkey approval page and the attestation verification page. No dependencies: plain ES modules for the browser, tested with node:test.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test"
+  }
+}
