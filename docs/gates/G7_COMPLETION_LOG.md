@@ -46,16 +46,17 @@ No code changed in this gate, so no test counts changed: the full suite is still
 1. **The license is MIT.** The brief asked for "an OSI license" without naming one, so I chose MIT (the simplest) and put
    the author's name in the copyright line. If Apache 2.0 or another license is wanted, replace `LICENSE`; the pipeline
    accepts MIT, Apache, BSD-2/3 and MPL text.
-2. **Three credits are blank.** Rule D-3 requires the README to say which patterns KINTSUGI, TENURE and CASCADE
-   contributed. The repository records nothing about them (only GNOMON's bitemporal model and AXIOM's broker pattern
-   are described in the blueprint), and I did not guess. The README says so explicitly, in bold, in the "Earlier
-   repositories" subsection. **Fill those three lines in before submitting.** The gate cannot catch this.
+2. **Credits (rule D-3), resolved.** The first README left KINTSUGI, TENURE and CASCADE blank because the repository
+   recorded nothing about them. The author then supplied the lineage and repository links, and the README now credits
+   all five projects (GNOMON, AXIOM, KINTSUGI, TENURE, CASCADE) plus three supporting research repositories, and states
+   the window as 2026-08-31 to 2026-10-23 12:00 PT. The author's statements are taken as given; I could not check them
+   against those repositories (the isolation rule keeps this session out of sibling folders).
 3. **The AI-assistance paragraph** states that Claude Code with Claude Opus 5.5 and Sonnet 5.5 drafted the code under
    the author's direction, that the last gates' commits carry no trailer at the author's request, and that nothing in the
    repository calls a language model at runtime. Check it says what the author is comfortable saying.
-4. **"Built during the submission window."** The README says the git history starts 2026-10-20 and that everything in
-   the repository is new for this submission. I do not know when the submission window opened; if any of it predates
-   that, change the sentence.
+4. **"Built during the submission window."** Resolved: the README gives the window the author stated and says this
+   repository's git history starts on 2026-10-20. It says the author is the sole *human* author, and keeps the AI
+   assistance disclosure beside it rather than claiming sole authorship outright.
 
 ## Disclosure rules (blueprint section 12)
 
