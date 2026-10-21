@@ -1,0 +1,19 @@
+{
+  "hearthward": {
+    "synthetic": true,
+    "environment": "dev",
+    "region": "us-east-1",
+    "cognito_domain_prefix": "hearthward-synthetic",
+    "alexa_redirect_uris": [
+      "https://pitangui.amazon.com/api/skill/link/SYNTHETICPLACEHOLDER",
+      "https://layla.amazon.com/api/skill/link/SYNTHETICPLACEHOLDER",
+      "https://alexa.amazon.co.jp/api/skill/link/SYNTHETICPLACEHOLDER"
+    ],
+    "facade_service_clients": {},
+    "tags": {
+      "project": "hearthward",
+      "data-origin": "synthetic",
+      "managed-by": "cdk"
+    }
+  }
+}

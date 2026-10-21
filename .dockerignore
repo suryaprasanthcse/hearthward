@@ -1,0 +1,6 @@
+# Image builds see only the source tree and the Dockerfiles (infra/app.py stages these as image assets).
+*
+!src
+!infra/Dockerfile.facade
+!infra/Dockerfile.mcp
+**/__pycache__

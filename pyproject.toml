@@ -21,6 +21,8 @@ dev = [
     "hypothesis",
     "moto[dynamodb]",
     "ruff",
+    "aws-cdk-lib",
+    "constructs",
 ]
 
 [build-system]

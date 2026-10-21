@@ -1,0 +1,5 @@
+# facade_as Lambda (container image). Build context: the repository root.
+FROM public.ecr.aws/lambda/python:3.12
+RUN pip install --no-cache-dir "starlette" "pyjwt[crypto]" "cryptography" "boto3"
+COPY src/hearthward ${LAMBDA_TASK_ROOT}/hearthward
+CMD ["hearthward.authz.lambda_handler.handler"]

@@ -20,6 +20,7 @@ class McpConfig:
     cognito_issuer: str
     cognito_domain: str
     alexa_client_id: str
+    extra_hosts: tuple[str, ...] = ()  # e.g. the internal ALB's DNS name, which API Gateway may forward as Host
 
     @classmethod
     def from_env(cls, env: Mapping[str, str] | None = None) -> McpConfig:
@@ -30,7 +31,8 @@ class McpConfig:
         missing = [var for var in names.values() if not env.get(var)]
         if missing:
             raise RuntimeError("not set: " + ", ".join(missing))
-        return cls(**{field: env[var] for field, var in names.items()})
+        extra = tuple(h.strip() for h in env.get("HW_EXTRA_ALLOWED_HOSTS", "").split(",") if h.strip())
+        return cls(**{field: env[var] for field, var in names.items()}, extra_hosts=extra)
 
     @property
     def host(self) -> str:
@@ -39,7 +41,7 @@ class McpConfig:
     @property
     def allowed_hosts(self) -> list[str]:
         """P-6: the API Gateway host and `localhost:*`, never the SDK's localhost-only default."""
-        return [self.host, "localhost:*", "127.0.0.1:*"]
+        return [self.host, *self.extra_hosts, "localhost:*", "127.0.0.1:*"]
 
     @property
     def allowed_origins(self) -> list[str]:
