@@ -163,8 +163,10 @@ pattern is what carried over, and no code from them is copied into `src/`.
 ## AI assistance
 
 HEARTHWARD was built with AI assistance. The code, tests and documentation were drafted with **Claude Code**
-(Anthropic's coding agent) running Claude models: Claude Opus 5.5 for the first gates and Claude Sonnet 5.5 for
-the middle ones (visible in those commits' trailers); the last gates' commits carry no trailer, at the author's request. The work followed a written blueprint and a machine-checked gate
+(Anthropic's coding agent) running Claude models: Claude Opus 5.5 for the first gates, Claude Sonnet 5.5 for
+the middle ones and for the last. The commits originally carried `Co-Authored-By` trailers naming the model; the author
+had them removed from the history before publishing, so the repository's contributor list shows only the author. This
+section is the disclosure. The work followed a written blueprint and a machine-checked gate
 pipeline, and it was run under project rules that forbid network calls, real credentials and weakening any check.
 Commits are authored by Surya Prasanth R, who set the direction, made the design decisions and wrote the human
 attestations.

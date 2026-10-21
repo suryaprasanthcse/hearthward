@@ -15,7 +15,8 @@ The overall chain is still INCOMPLETE, because of G3 and G5 attestations that ne
 
 Gate F was run (PASS) before each commit. Paths were staged explicitly. No push, remote, amend, rebase or force.
 **Neither G6 commit has a `Co-Authored-By` trailer**, at the user's instruction (Surya Prasanth R is the sole author).
-Earlier commits keep the trailers they were made with; history was not rewritten.
+Earlier commits were made with trailers; a later history rewrite (before the first push) removed them all, so the hashes
+in this log are pre-rewrite (`docs/gates/COMMIT_MAP.md` has the mapping).
 
 ## Tests
 

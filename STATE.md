@@ -7,10 +7,11 @@ Snapshot for the next session. Details: `docs/gates/G1_COMPLETION_LOG.md` throug
 Branch `main`. Latest: `a30f831` (`docs(G7): README, MIT license, friction log and product feedback`), then the docs
 commit that adds the G7 log and this file. Before them: `4c356a7` and `dd88090` (G6), `a1dff48` and `9ac7000`
 (G5), `3b95867`, `d0eae7b` (the human's `vendor/gnomon` submodule, `78c8d2e`) and `ac5d770` (G4), `6decd1e` and
-`c4253a1` (G3), `273b995` (G2 PASS). Nothing is pushed (no remotes).
+`c4253a1` (G3), `273b995` (G2 PASS). The remote is `origin` = https://github.com/suryaprasanthcse/hearthward.git.
 
-Commit policy: from G6 on (G6 and G7 included), commits carry **no `Co-Authored-By` trailer** (the user is the sole author). Earlier commits
-keep theirs; history is not rewritten.
+Commit policy: commits carry **no `Co-Authored-By` trailer** (the user is the sole author). The trailers on the earlier
+commits were stripped by a history rewrite just before the first push, so **every commit hash quoted in these notes and
+in `docs/gates/*.md` is a pre-rewrite hash**; `docs/gates/COMMIT_MAP.md` maps each to its new hash.
 
 ## Gates
 

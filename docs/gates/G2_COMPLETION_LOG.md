@@ -151,7 +151,8 @@ summary: F PASS, G0 PASS, G1 PASS, G2 PASS
 
 1. **Commit trailer.** The task brief and the session's attribution rule say `Co-Authored-By: Claude Sonnet 5.5`;
    `CLAUDE.md` hard rule 10 and the routing table say Opus 5.5 for the main session. This session ran on Sonnet 5.5,
-   so the commit says Sonnet 5.5, which is the accurate attribution. Say if the project wants the Opus trailer anyway.
+   so the commit said Sonnet 5.5, which was the accurate attribution. (Superseded: all trailers were later removed from the
+   history at the author's request; see the README's AI assistance section and `docs/gates/COMMIT_MAP.md`.)
 2. **Spec export widened.** `tools/export_spec.py` now also writes `tools.json` and `hx.json`, so runtime code reads
    JSON, never markdown. The existing two outputs are byte-identical. Two G1 test expectations changed to match:
    `test_spec_export.py` lists the four files, and the "LF-terminated" check accepts a closing `]` as well as `}`

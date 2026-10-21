@@ -14,7 +14,8 @@ Gate G7 (submission) executed by the main session. **Three of five checks pass; 
 | (this commit) | docs(G7): completion log and state snapshot |
 
 Gate F was run (PASS) before each commit. Paths were staged explicitly. No push, remote, amend, rebase or force.
-Neither commit has a `Co-Authored-By` trailer, at the author's instruction.
+Neither commit has a `Co-Authored-By` trailer, at the author's instruction. (All earlier trailers were later stripped by a
+history rewrite before the first push; hashes in this log are pre-rewrite, see `docs/gates/COMMIT_MAP.md`.)
 
 ## `uv run python tools/pipeline.py --only G7` (exit 3)
 
