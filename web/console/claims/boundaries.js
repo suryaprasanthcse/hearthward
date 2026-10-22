@@ -173,6 +173,6 @@ export function boundariesView({ state, data, derived }) {
     badges: (rec ? badge("recorded", rec.data.recorded_at_utc) : "") + badge("computed") + badge("synthetic"),
     hero: architectureMap(data, state),
     tryit: `<div class="label">Probes</div>${probePanel(state, data)}${ringCard(state, data, ring)}`,
-    proof: `<ul class="proof">${probeLines}${ringLine}</ul><p class="note">Node status comes from ${esc(data.topology.source)}. CloudFront and the live probes arrive with Phase 6 and are not drawn until deployed.</p>`,
+    proof: `<ul class="proof">${probeLines}${ringLine}</ul><p class="note">Node status comes from ${esc(data.topology.source)}. This page is served locally: no CloudFront distribution is deployed, so live probes are unavailable and the rows above are recordings.</p>`,
   };
 }
