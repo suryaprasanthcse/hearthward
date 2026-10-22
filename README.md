@@ -1,5 +1,27 @@
 # HEARTHWARD
 
+## ⚡ Quick Evaluation & Interactive Console
+
+Judges can evaluate Hearthward in two ways:
+
+### 1. Direct Source & Spec Inspection (Browse on GitHub)
+- [Console Architecture & Entry Point](web/index.html)
+- [Wardline Telemetry Replay](web/wardline/)
+- [Canonical KMS Attestation Bundle](web/console/data/bundle.kms.json)
+- [Recorded AWS API Probes](web/console/data/probe.recorded.json)
+
+### 2. Live Interactive Console (Run Locally)
+Run the zero-dependency local static server:
+```bash
+python -m http.server 8765 --directory web
+```
+Then open:
+- Console: <http://127.0.0.1:8765/index.html#claim=integrity>
+- Boundaries and recorded probes: <http://127.0.0.1:8765/index.html#claim=boundaries>
+- Wardline replay: <http://127.0.0.1:8765/wardline/>
+
+The console is served locally and nothing in it is hosted: the KMS signature and the probes are recordings made against the deployed stack, and every value carries a badge saying how it was produced.
+
 HEARTHWARD helps people who live alone resist scams. It joins what the front door sees, what is said in the room
 and what Alexa+ is asked into one bitemporal, hash-chained record. It decides with Wald's sequential probability
 ratio test over a scam-script hidden Markov model, so the error budget is explicit, and it never lets a voice in the
