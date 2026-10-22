@@ -23,5 +23,11 @@
     "by": "Surya Prasanth R",
     "at": "2026-10-21",
     "evidence": "RFC 8414 metadata verified locally; advertises S256 code challenge method and authorization_code/refresh_token/client_credentials grant types."
+  },
+  "G7.demo_video": {
+    "by": "Surya Prasanth R",
+    "at": "2026-10-23",
+    "evidence": "https://www.youtube.com/watch?v=uMJgD8jY8oI",
+    "duration_s": 156
   }
 }

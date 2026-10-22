@@ -26,7 +26,7 @@ in `docs/gates/*.md` is a pre-rewrite hash**; `docs/gates/COMMIT_MAP.md` maps ea
 | G4 | PASS | 115 tests; `vendor/gnomon` pinned at `78c8d2e13c3b` |
 | G5 | INCOMPLETE (exit 3) | everything automated PASS (123 tests); `G5.cloudtrail_proof_hash` is your attestation and needs a deployment |
 | G6 | PASS when `HW_ANCHOR_BUCKET` is set; INCOMPLETE (exit 3) without it | 99 `gate_g6` tests (including the console's, which run the node suites); verifier self-test 41/41 |
-| G7 | INCOMPLETE (exit 3) | `G7.readme`, `G7.license`, `G7.docs` PASS; `G7.demo_video` and `G7.devpost_submitted` are yours |
+| G7 | INCOMPLETE (exit 3) | `G7.readme`, `G7.license`, `G7.docs` PASS; `G7.demo_video` attested 2026-10-23 (https://www.youtube.com/watch?v=uMJgD8jY8oI, 156 s, the author's attestation); `G7.devpost_submitted` is yours |
 
 Full suite: 944 pytest tests and 137 node tests (`cd web && npm test`). Gate variables: five for G2, three for G3, three for G5, `HW_ANCHOR_BUCKET` for G6
 (`hearthward-compliance-anchors` is accepted); synthetic values are in `tests/g2_support.py`, `tests/g5_support.py` and
@@ -98,8 +98,8 @@ the G3, G5 and G6 logs.
 
 ## Open items
 
-- Human: finish G3 (deploy, `--probe`, simulator attestation) and G5 (`G5.cloudtrail_proof_hash`); G7: the demo video
-  (under 180 s, public URL, synthetic-data disclosure on screen) and the Devpost submission, each attested.
+- Human: finish G3 (deploy, `--probe`, simulator attestation) and G5 (`G5.cloudtrail_proof_hash`); G7: the Devpost
+  submission, attested (the demo video is attested).
 - Build and deploy: the broker Lambda and approval endpoints, executor role, ladder state machine and its Lambdas,
   passkey registration, a real `FactsProvider`, the anchor job and Object Lock bucket; add them to the CDK stack.
 - Fusion step that builds §9 decision records and signs them; publish the attest-signer public key for judges.
