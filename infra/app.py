@@ -21,6 +21,8 @@ from typing import Any
 import aws_cdk as cdk
 from aws_cdk import aws_apigatewayv2 as apigw
 from aws_cdk import aws_apigatewayv2_integrations as integrations
+from aws_cdk import aws_cloudfront as cloudfront
+from aws_cdk import aws_cloudfront_origins as origins
 from aws_cdk import aws_cognito as cognito
 from aws_cdk import aws_dynamodb as dynamodb
 from aws_cdk import aws_ec2 as ec2
@@ -31,11 +33,21 @@ from aws_cdk import aws_iam as iam
 from aws_cdk import aws_kms as kms
 from aws_cdk import aws_lambda as lambda_
 from aws_cdk import aws_logs as logs
+from aws_cdk import aws_s3 as s3
+from aws_cdk import aws_s3_deployment as s3deploy
 from constructs import Construct
 
 ROOT = Path(__file__).resolve().parent.parent
 MCP_PORT = 8080
 HEALTH_PATH = "/.well-known/oauth-protected-resource"
+# Console hosting (blueprint section 4.5): the paths CloudFront sends to the APIs, so the console's "Run live" probes
+# are same-origin. Alexa+ keeps using the API Gateway URLs and the manifest's `resource`; none of them change.
+MCP_API_PATHS = (HEALTH_PATH, "/mcp")
+AUTH_API_PATHS = ("/.well-known/oauth-authorization-server", "/jwks")
+CONSOLE_CSP = ("default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; "
+               "base-uri 'none'; form-action 'none'; frame-ancestors 'none'")
+CONSOLE_EXCLUDES = ["tests", "**/tests", "node_modules", "**/node_modules", "**/*.py", "package.json", "package-lock.json",
+                    "**/*.md"]
 DYNAMODB_WRITES = ["dynamodb:PutItem", "dynamodb:UpdateItem", "dynamodb:DeleteItem", "dynamodb:BatchWriteItem",
                    "dynamodb:TransactWriteItems"]
 DEFAULTS: dict[str, Any] = {
@@ -74,6 +86,7 @@ class HearthwardStack(cdk.Stack):
         self._identity()
         self._facade()
         self._mcp()
+        self._console()
         self._outputs()
 
     # -- building blocks -----------------------------------------------------------------------------------
@@ -188,6 +201,59 @@ class HearthwardStack(cdk.Stack):
         self.mcp_api.add_routes(path="/mcp", methods=[apigw.HttpMethod.POST], integration=integration)
         self.mcp_api.add_routes(path=HEALTH_PATH, methods=[apigw.HttpMethod.GET], integration=integration)
 
+    # -- the console: private S3 origin with OAC, CloudFront, and the API paths its probes call ---------------------
+
+    def _console(self) -> None:
+        """Serves `web/` and routes the four probe paths to the APIs. Deploying it changes nothing Alexa+ uses."""
+        self.console_bucket = s3.Bucket(
+            self, "ConsoleBucket", block_public_access=s3.BlockPublicAccess.BLOCK_ALL, enforce_ssl=True,
+            encryption=s3.BucketEncryption.S3_MANAGED, removal_policy=cdk.RemovalPolicy.RETAIN)
+        headers = cloudfront.ResponseHeadersPolicy(
+            self, "ConsoleHeaders", comment="Strict static headers for the console (CSP, HSTS, no-referrer)",
+            security_headers_behavior=cloudfront.ResponseSecurityHeadersBehavior(
+                content_security_policy=cloudfront.ResponseHeadersContentSecurityPolicy(
+                    content_security_policy=CONSOLE_CSP, override=True),
+                strict_transport_security=cloudfront.ResponseHeadersStrictTransportSecurity(
+                    access_control_max_age=cdk.Duration.days(730), include_subdomains=True, override=True),
+                content_type_options=cloudfront.ResponseHeadersContentTypeOptions(override=True),
+                referrer_policy=cloudfront.ResponseHeadersReferrerPolicy(
+                    referrer_policy=cloudfront.HeadersReferrerPolicy.NO_REFERRER, override=True),
+                frame_options=cloudfront.ResponseHeadersFrameOptions(
+                    frame_option=cloudfront.HeadersFrameOption.DENY, override=True)))
+
+        def api_origin(api: apigw.HttpApi) -> origins.HttpOrigin:
+            return origins.HttpOrigin(f"{api.api_id}.execute-api.{self.region}.{self.url_suffix}",
+                                      protocol_policy=cloudfront.OriginProtocolPolicy.HTTPS_ONLY)
+
+        def api_behavior(origin: origins.HttpOrigin, methods: cloudfront.AllowedMethods) -> cloudfront.BehaviorOptions:
+            # Never cached; every viewer header (Authorization included) reaches the API, but not the viewer's Host.
+            return cloudfront.BehaviorOptions(
+                origin=origin, allowed_methods=methods, cache_policy=cloudfront.CachePolicy.CACHING_DISABLED,
+                origin_request_policy=cloudfront.OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER,
+                viewer_protocol_policy=cloudfront.ViewerProtocolPolicy.HTTPS_ONLY)
+
+        mcp, auth = api_origin(self.mcp_api), api_origin(self.auth_api)
+        behaviors: dict[str, cloudfront.BehaviorOptions] = {
+            "/mcp": api_behavior(mcp, cloudfront.AllowedMethods.ALLOW_ALL),
+            HEALTH_PATH: api_behavior(mcp, cloudfront.AllowedMethods.ALLOW_GET_HEAD)}
+        for path in AUTH_API_PATHS:
+            behaviors[path] = api_behavior(auth, cloudfront.AllowedMethods.ALLOW_GET_HEAD)
+        self.console_distribution = cloudfront.Distribution(
+            self, "ConsoleDistribution", comment="HEARTHWARD console (static) and its probe paths",
+            default_root_object="index.html", http_version=cloudfront.HttpVersion.HTTP2_AND_3,
+            minimum_protocol_version=cloudfront.SecurityPolicyProtocol.TLS_V1_2_2021,
+            price_class=cloudfront.PriceClass.PRICE_CLASS_100,
+            default_behavior=cloudfront.BehaviorOptions(
+                origin=origins.S3BucketOrigin.with_origin_access_control(self.console_bucket),
+                allowed_methods=cloudfront.AllowedMethods.ALLOW_GET_HEAD,
+                cache_policy=cloudfront.CachePolicy.CACHING_OPTIMIZED, response_headers_policy=headers,
+                viewer_protocol_policy=cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS, compress=True),
+            additional_behaviors=behaviors)
+        s3deploy.BucketDeployment(
+            self, "ConsoleFiles", sources=[s3deploy.Source.asset(str(ROOT / "web"), exclude=CONSOLE_EXCLUDES)],
+            destination_bucket=self.console_bucket, distribution=self.console_distribution,
+            distribution_paths=["/*"], prune=True)
+
     # -- outputs: the values G2 and G3 name as environment variables ---------------------------------------------
 
     def _outputs(self) -> None:
@@ -201,6 +267,10 @@ class HearthwardStack(cdk.Stack):
         }.items():
             cdk.CfnOutput(self, "".join(part.capitalize() for part in name.lower().split("_")), value=value,
                           description=name)
+        # No description on purpose: these are not gate variables.
+        cdk.CfnOutput(self, "ConsoleUrl", value=f"https://{self.console_distribution.distribution_domain_name}")
+        cdk.CfnOutput(self, "ConsoleBucketName", value=self.console_bucket.bucket_name)
+        cdk.CfnOutput(self, "ConsoleDistributionId", value=self.console_distribution.distribution_id)
 
 
 def load_settings(app: cdk.App) -> dict[str, Any]:

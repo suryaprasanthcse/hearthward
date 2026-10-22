@@ -324,3 +324,105 @@ def test_a_task_that_cannot_start_fails_the_deployment_fast_and_rolls_back(cfn: 
     (service,) = resources(cfn, "AWS::ECS::Service").values()
     breaker = service["Properties"]["DeploymentConfiguration"]["DeploymentCircuitBreaker"]
     assert breaker == {"Enable": True, "Rollback": True}
+
+
+# ── the console: S3 + OAC + CloudFront (blueprint section 4.5) ──────────────────────────────────────────
+
+CACHING_DISABLED = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad"
+CACHING_OPTIMIZED = "658327ea-f89d-4fab-a63d-7e88639e58f6"
+ALL_VIEWER_EXCEPT_HOST = "b689b0a8-53d0-40ab-baf2-68738e2966ac"
+
+
+def distribution_config(cfn: dict[str, Any]) -> dict[str, Any]:
+    (dist,) = resources(cfn, "AWS::CloudFront::Distribution").values()
+    return dist["Properties"]["DistributionConfig"]
+
+
+def origin_domain_of(cfn: dict[str, Any], behavior: dict[str, Any]) -> str:
+    config = distribution_config(cfn)
+    (origin,) = [o for o in config["Origins"] if o["Id"] == behavior["TargetOriginId"]]
+    return json.dumps(origin["DomainName"])
+
+
+def test_the_console_bucket_is_private_encrypted_and_https_only(cfn: dict[str, Any]) -> None:
+    (bucket,) = resources(cfn, "AWS::S3::Bucket").values()  # the console bucket is the stack's only bucket
+    props = bucket["Properties"]
+    assert props["PublicAccessBlockConfiguration"] == {"BlockPublicAcls": True, "BlockPublicPolicy": True,
+                                                       "IgnorePublicAcls": True, "RestrictPublicBuckets": True}
+    assert props["BucketEncryption"]["ServerSideEncryptionConfiguration"][0]["ServerSideEncryptionByDefault"] == {
+        "SSEAlgorithm": "AES256"}
+    assert bucket["DeletionPolicy"] == "Retain"
+    policy = json.dumps(resources(cfn, "AWS::S3::BucketPolicy"))
+    assert '"aws:SecureTransport": "false"' in policy
+
+
+def test_only_cloudfront_through_origin_access_control_may_read_the_bucket(cfn: dict[str, Any]) -> None:
+    (oac,) = resources(cfn, "AWS::CloudFront::OriginAccessControl").values()
+    assert oac["Properties"]["OriginAccessControlConfig"]["SigningBehavior"] == "always"
+    assert oac["Properties"]["OriginAccessControlConfig"]["OriginAccessControlOriginType"] == "s3"
+    statements = [s for p in resources(cfn, "AWS::S3::BucketPolicy").values()
+                  for s in as_list(p["Properties"]["PolicyDocument"]["Statement"]) if s["Effect"] == "Allow"]
+    reads = [s for s in statements if s.get("Principal") == {"Service": "cloudfront.amazonaws.com"}]
+    assert len(reads) == 1 and reads[0]["Action"] == "s3:GetObject" and "AWS:SourceArn" in json.dumps(reads[0]["Condition"])
+    for s in statements:  # no wildcard principal can read the bucket
+        assert s.get("Principal") != {"AWS": "*"} and s.get("Principal") != "*"
+    config = distribution_config(cfn)
+    s3_origin = next(o for o in config["Origins"] if "S3OriginConfig" in o)
+    assert s3_origin["OriginAccessControlId"] and s3_origin["S3OriginConfig"]["OriginAccessIdentity"] == ""
+
+
+def test_the_static_behaviour_is_get_head_only_with_the_strict_headers_policy(cfn: dict[str, Any]) -> None:
+    config = distribution_config(cfn)
+    default = config["DefaultCacheBehavior"]
+    assert default["AllowedMethods"] == ["GET", "HEAD"] and default["CachePolicyId"] == CACHING_OPTIMIZED
+    assert default["ViewerProtocolPolicy"] == "redirect-to-https" and config["DefaultRootObject"] == "index.html"
+    (policy,) = resources(cfn, "AWS::CloudFront::ResponseHeadersPolicy").values()
+    sec = policy["Properties"]["ResponseHeadersPolicyConfig"]["SecurityHeadersConfig"]
+    assert sec["ContentSecurityPolicy"] == {"ContentSecurityPolicy": (
+        "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; "
+        "base-uri 'none'; form-action 'none'; frame-ancestors 'none'"), "Override": True}
+    assert sec["StrictTransportSecurity"]["AccessControlMaxAgeSec"] >= 31536000
+    assert sec["StrictTransportSecurity"]["IncludeSubdomains"] is True and sec["StrictTransportSecurity"]["Override"]
+    assert sec["ContentTypeOptions"] == {"Override": True}
+    assert sec["ReferrerPolicy"] == {"ReferrerPolicy": "no-referrer", "Override": True}
+    assert sec["FrameOptions"] == {"FrameOption": "DENY", "Override": True}
+    assert "unsafe" not in sec["ContentSecurityPolicy"]["ContentSecurityPolicy"] and "https:" not in json.dumps(sec)
+
+
+def test_the_four_probe_paths_route_to_the_right_api_uncached_with_every_viewer_header(
+        cfn: dict[str, Any], stack: Any) -> None:
+    behaviors = {b["PathPattern"]: b for b in distribution_config(cfn)["CacheBehaviors"]}
+    assert set(behaviors) == {"/.well-known/oauth-protected-resource", "/.well-known/oauth-authorization-server",
+                              "/jwks", "/mcp"}
+    mcp_id, auth_id = (json.dumps(stack.resolve(api.api_id)) for api in (stack.mcp_api, stack.auth_api))
+    for path, api_id in (("/.well-known/oauth-protected-resource", mcp_id), ("/mcp", mcp_id),
+                         ("/.well-known/oauth-authorization-server", auth_id), ("/jwks", auth_id)):
+        b = behaviors[path]
+        assert api_id in origin_domain_of(cfn, b), path
+        assert b["CachePolicyId"] == CACHING_DISABLED and b["OriginRequestPolicyId"] == ALL_VIEWER_EXCEPT_HOST, path
+        assert b["ViewerProtocolPolicy"] == "https-only", path
+        assert "ResponseHeadersPolicyId" not in b, "API responses keep the API's own headers"
+    assert behaviors["/jwks"]["AllowedMethods"] == ["GET", "HEAD"]
+    assert "POST" in behaviors["/mcp"]["AllowedMethods"] and "OPTIONS" in behaviors["/mcp"]["AllowedMethods"]
+    for origin in distribution_config(cfn)["Origins"]:
+        if "CustomOriginConfig" in origin:
+            assert origin["CustomOriginConfig"]["OriginProtocolPolicy"] == "https-only"
+
+
+def test_cloudfront_leaves_the_apis_alexa_uses_exactly_as_they_were(cfn: dict[str, Any]) -> None:
+    routes = sorted(r["Properties"]["RouteKey"] for r in resources(cfn, "AWS::ApiGatewayV2::Route").values())
+    assert routes == ["GET /.well-known/oauth-authorization-server", "GET /.well-known/oauth-protected-resource",
+                      "GET /.well-known/openid-configuration", "GET /authorize", "GET /jwks", "POST /mcp",
+                      "POST /token"]
+    outputs = outputs_by_variable(cfn)
+    assert "cloudfront" not in json.dumps(outputs["HW_MCP_RESOURCE_URI"]).lower()
+    assert "cloudfront" not in json.dumps(outputs["HW_FACADE_ISSUER"]).lower()
+
+
+def test_the_console_files_are_deployed_with_an_invalidation_and_without_tests_or_python(cfn: dict[str, Any],
+                                                                                         infra_app: Any) -> None:
+    (deployment,) = resources(cfn, "Custom::CDKBucketDeployment").values()
+    assert deployment["Properties"]["DistributionPaths"] == ["/*"] and deployment["Properties"]["Prune"] is True
+    excludes = set(infra_app.CONSOLE_EXCLUDES)
+    assert {"tests", "**/*.py", "package.json", "package-lock.json", "node_modules"} <= excludes
+    assert {"ConsoleUrl", "ConsoleBucketName", "ConsoleDistributionId"} <= set(cfn["Outputs"])
