@@ -1,0 +1,171 @@
+{
+  "git_commit": "2e4d5f88a740c4837d4e450ff1604829758b0193",
+  "issuer": "https://zlpaxm402c.execute-api.us-east-1.amazonaws.com",
+  "note": "Recorded from the deployed stack by a human-run tool. No credentials are sent.",
+  "probes": [
+    {
+      "at_utc": "2026-10-22T08:26:21Z",
+      "body_json": {
+        "authorization_servers": [
+          "https://zlpaxm402c.execute-api.us-east-1.amazonaws.com"
+        ],
+        "resource": "https://9h9hww5uzg.execute-api.us-east-1.amazonaws.com/mcp",
+        "scopes_supported": [
+          "openid",
+          "https://9h9hww5uzg.execute-api.us-east-1.amazonaws.com/mcp/tools",
+          "mcp:service"
+        ]
+      },
+      "body_text": null,
+      "body_truncated": false,
+      "expected_status": 200,
+      "header_names": [
+        "apigw-requestid",
+        "cache-control",
+        "connection",
+        "content-length",
+        "content-type",
+        "date",
+        "server"
+      ],
+      "headers": {
+        "Content-Length": "267",
+        "Content-Type": "application/json",
+        "Date": "Thu, 22 Oct 2026 08:26:21 GMT",
+        "apigw-requestid": "FoxLOjySoAMEVUg=",
+        "cache-control": "public, max-age=3600",
+        "server": "uvicorn"
+      },
+      "id": "protected_resource",
+      "method": "GET",
+      "status": 200,
+      "url": "https://9h9hww5uzg.execute-api.us-east-1.amazonaws.com/.well-known/oauth-protected-resource",
+      "www_authenticate_present": false
+    },
+    {
+      "at_utc": "2026-10-22T08:26:22Z",
+      "body_json": {
+        "authorization_endpoint": "https://zlpaxm402c.execute-api.us-east-1.amazonaws.com/authorize",
+        "code_challenge_methods_supported": [
+          "S256"
+        ],
+        "grant_types_supported": [
+          "authorization_code",
+          "refresh_token",
+          "client_credentials"
+        ],
+        "issuer": "https://zlpaxm402c.execute-api.us-east-1.amazonaws.com",
+        "jwks_uri": "https://zlpaxm402c.execute-api.us-east-1.amazonaws.com/jwks",
+        "response_types_supported": [
+          "code"
+        ],
+        "scopes_supported": [
+          "openid",
+          "https://9h9hww5uzg.execute-api.us-east-1.amazonaws.com/mcp/tools",
+          "mcp:service"
+        ],
+        "token_endpoint": "https://zlpaxm402c.execute-api.us-east-1.amazonaws.com/token",
+        "token_endpoint_auth_methods_supported": [
+          "client_secret_basic",
+          "client_secret_post"
+        ]
+      },
+      "body_text": null,
+      "body_truncated": false,
+      "expected_status": 200,
+      "header_names": [
+        "apigw-requestid",
+        "cache-control",
+        "connection",
+        "content-length",
+        "content-type",
+        "date"
+      ],
+      "headers": {
+        "Apigw-Requestid": "FoxLXg-nIAMEV5w=",
+        "Content-Length": "672",
+        "Content-Type": "application/json",
+        "Date": "Thu, 22 Oct 2026 08:26:24 GMT",
+        "cache-control": "public, max-age=3600"
+      },
+      "id": "facade_metadata",
+      "method": "GET",
+      "status": 200,
+      "url": "https://zlpaxm402c.execute-api.us-east-1.amazonaws.com/.well-known/oauth-authorization-server",
+      "www_authenticate_present": false
+    },
+    {
+      "at_utc": "2026-10-22T08:26:24Z",
+      "body_json": {
+        "keys": [
+          {
+            "alg": "ES256",
+            "crv": "P-256",
+            "kid": "5bb24cb4-5a83-4ca5-b745-8d06990d91ed",
+            "kty": "EC",
+            "use": "sig",
+            "x": "xejNu6zYwg9lsRiiO1wTwwKhASxCd4kkWXgNtn4q-0w",
+            "y": "37Owll3yJ4xn396Yu5DpMQQezlHQP4Hs-h4_ftRlBpk"
+          }
+        ]
+      },
+      "body_text": null,
+      "body_truncated": false,
+      "expected_status": 200,
+      "header_names": [
+        "apigw-requestid",
+        "cache-control",
+        "connection",
+        "content-length",
+        "content-type",
+        "date"
+      ],
+      "headers": {
+        "Apigw-Requestid": "FoxLvgAIoAMEVsw=",
+        "Content-Length": "208",
+        "Content-Type": "application/json",
+        "Date": "Thu, 22 Oct 2026 08:26:25 GMT",
+        "cache-control": "public, max-age=300"
+      },
+      "id": "facade_jwks",
+      "method": "GET",
+      "status": 200,
+      "url": "https://zlpaxm402c.execute-api.us-east-1.amazonaws.com/jwks",
+      "www_authenticate_present": false
+    },
+    {
+      "at_utc": "2026-10-22T08:26:25Z",
+      "body_json": {
+        "error": "invalid_token",
+        "error_description": "missing bearer token"
+      },
+      "body_text": null,
+      "body_truncated": false,
+      "expected_status": 401,
+      "header_names": [
+        "apigw-requestid",
+        "connection",
+        "content-length",
+        "content-type",
+        "date",
+        "server"
+      ],
+      "headers": {
+        "Content-Length": "68",
+        "Content-Type": "application/json",
+        "Date": "Thu, 22 Oct 2026 08:26:26 GMT",
+        "apigw-requestid": "FoxL4gjsIAMEb8g=",
+        "server": "uvicorn"
+      },
+      "id": "mcp_no_token",
+      "method": "POST",
+      "status": 401,
+      "url": "https://9h9hww5uzg.execute-api.us-east-1.amazonaws.com/mcp",
+      "www_authenticate_present": false
+    }
+  ],
+  "recorded_at_utc": "2026-10-22T08:26:26Z",
+  "resource": "https://9h9hww5uzg.execute-api.us-east-1.amazonaws.com/mcp",
+  "tool": "tools/record_probe.py",
+  "v": 1
+}
