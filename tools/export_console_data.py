@@ -110,7 +110,7 @@ TOPOLOGY = [
     ("mcp_api", "mcp HTTP API", "api", "deployed", DEPLOYED + ": POST /mcp without a token answers 401, no WWW-Authenticate."),
     ("alb", "VPC Link · internal ALB", "api", "deployed", "Deployed; the ALB target is healthy (STATE.md)."),
     ("mcp", "Fargate: mcp", "compute", "deployed", "Deployed; the task is running."),
-    ("fusion", "fusion (decision core)", "compute", "built", "Built and tested (G4); not in the deployed stack."),
+    ("fusion", "fusion (library only)", "compute", "built", "The decision and causal libraries are built and tested (G4). There is no fusion worker, and nothing here is deployed."),
     ("falkordb", "FalkorDB", "data", "deferred", "Binding to the real GNOMON graph is an open item."),
     ("bedrock", "Bedrock extractor", "compute", "deferred", "The orrery labels tactics by hand; schema-validated enums only (TB-7)."),
     ("auth_api", "auth HTTP API (facade)", "api", "deployed", DEPLOYED + ": RFC 8414 metadata advertises S256; /jwks is served."),

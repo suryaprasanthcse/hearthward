@@ -143,7 +143,7 @@ ${result?.problems.length ? `<p class="fail">${esc(result.problems.join("; "))} 
     const edited = result.digest !== result.baseline;
     proofItems.push(
       `<li class="check ok"><span class="mark">✓</span> action_hash = <span class="mono">${esc(result.digest)}</span> ${badge("computed")}</li>`,
-      `<li class="check ${result.challengeDecodes ? "ok" : "fail"}"><span class="mark">${result.challengeDecodes ? "✓" : "✗"}</span> HX-03: challenge equals action_hash ${badge("computed")}</li>`,
+      `<li class="check ${result.challengeDecodes ? "ok" : "fail"}"><span class="mark">${result.challengeDecodes ? "✓" : "✗"}</span> HX-03: the challenge a passkey would sign is this action_hash (base64url of the same 32 bytes); no assertion is verified in this page, which only displays (TB-8) ${badge("computed")}</li>`,
       `<li class="check ${result.problems.length ? "fail" : "ok"}"><span class="mark">${edited ? "≠" : "="}</span> ${edited ? "this edit changes the hash, so a passkey assertion for one action cannot authorize another" : "unedited: same hash as the recorded action"} ${badge("computed")}</li>`,
     );
   }

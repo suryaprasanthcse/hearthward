@@ -3,7 +3,7 @@
 What got in the way while building HEARTHWARD, in the order it came up. Each entry says how I know: **observed**
 (it happened in this build and a test or log shows it), **documented** (a platform document says so and the code
 works around it, but I have not run it against the live service), or **expected** (a risk I have not been able to
-test). As of 2026-10-21 nothing has been deployed, so nothing here was seen against live Alexa+.
+test). The CDK stack was deployed to us-east-1 on 2026-10-21, but nothing here was seen against live Alexa+.
 
 ## Alexa+ MCP add-ons
 
@@ -62,3 +62,10 @@ test). As of 2026-10-21 nothing has been deployed, so nothing here was seen agai
     dependencies, so `npm install --package-lock-only --offline` produced one without any network.
 20. **WebAuthn counters. Expected.** The blueprint requires the signature counter to increase; some synced passkeys
     always report 0 and would never be able to approve. Not tested on real devices yet.
+
+21. **CloudFront refused a new account. Observed.** Deploying the console's hosting stack (a private S3 origin behind
+    CloudFront with Origin Access Control, strict response headers and the four probe paths routed to the APIs) failed
+    with HTTP 403: "Your account must be verified before you can add new CloudFront resources." CloudFormation rolled
+    back cleanly. The console is therefore served locally from `web/`, its "Run live" probes are disabled, and the
+    probe rows are recordings made by `tools/record_probe.py` (commit `ebc6552` holds the construct, `aea7956` reverts
+    it). Verifying the account with AWS Support would unblock it.

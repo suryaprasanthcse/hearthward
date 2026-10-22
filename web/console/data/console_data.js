@@ -1402,10 +1402,10 @@ export const CONSOLE = {
     "status": "deployed"
    },
    {
-    "detail": "Built and tested (G4); not in the deployed stack.",
+    "detail": "The decision and causal libraries are built and tested (G4). There is no fusion worker, and nothing here is deployed.",
     "group": "compute",
     "id": "fusion",
-    "label": "fusion (decision core)",
+    "label": "fusion (library only)",
     "status": "built"
    },
    {

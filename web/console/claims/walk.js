@@ -1,4 +1,4 @@
-// Claim 1: "It catches the scam with a bounded error rate" (§4.1). The HMM part of Λ is recomputed in the browser by
+// Claim 1: "It decides with an explicit error budget" (§4.1, §6.5). The HMM part of Λ is recomputed in the browser by
 // hmm.js (a port of hmm.py, checked to the milli-nat against the reference in pytest). The cross-device terms of a
 // recorded run come from the orrery and are checked against the spec; the sandbox applies them itself.
 import { LAMBDA, formatMnats, humanFeature, lrLabel } from "../../wardline/model.js";
@@ -150,8 +150,8 @@ export function walkView({ state, data, ui }) {
 ${evidence}${crossLine}</ul>
 <p class="note">${computed.custom ? "Lines and terms are yours" : `Recorded by the orrery (seed 7), terms: ${esc(walk.cross_terms.join(", ") || "none")}`}. A room claim adds only features not yet heard (DC-2); each term applies once (DC-3); only verified_official_callback lowers Λ (DC-1). Likelihood ratio, not odds (T-7).</p>`;
   return {
-    title: "It catches the scam with a bounded error rate",
-    assertion: "Λ is a log-likelihood ratio. Wald's test stops at A (intervene) or B (dismiss), so the false-alarm rate is at most α and the miss rate at most β.",
+    title: "It decides with an explicit error budget",
+    assertion: "Λ is a log-likelihood ratio. Wald's test stops at A (intervene) or B (dismiss), with α and β as the error budget. Under the HMM's dependence the bounds are approximations, and the parameters are uncalibrated priors (§6.5, §6.8).",
     badges: (computed.custom ? badge("computed") : badges("recorded", { synthetic: true }) + badge("computed")) + (computed.custom ? badge("synthetic") : ""),
     hero: `<div class="walk">${readout}${walkHero(sel, data, bounds)}</div>`, tryit: sandboxControls(state, data, sel, ui?.walkNote ?? ""), proof,
   };

@@ -62,7 +62,7 @@ The same disclosure is meant to appear on screen in the demo video.
   `client_credentials` grant).
 - **Mini challenge: Open Source.** MIT licensed (see `LICENSE`).
 - **Mini challenge: AWS Builder.** An AWS CDK app (`infra/`) defines DynamoDB, KMS, Cognito, two API Gateway HTTP
-  APIs, the facade Lambda and the Fargate MCP service. It has been synthesized but not deployed. The Step Functions
+  APIs, the facade Lambda and the Fargate MCP service. It is deployed to us-east-1 (see the status above). The Step Functions
   ladder definition and the KMS attestation code exist and are tested, but are not in the stack yet.
 
 ## What it does
@@ -172,7 +172,7 @@ The HEARTHWARD core runtime is all new code here:
 - A **standard-library-only offline verifier** (`tools/verify_attestation.py`) for KMS-signed decisions and ledger
   anchors, and a **WebAuthn relying party** (`src/hearthward/authz/webauthn_rp.py`) behind the broker.
 - An **AWS CDK stack** (`infra/app.py`) covering the DynamoDB tables, KMS keys, Cognito, the two HTTP APIs, the facade
-  Lambda and the Fargate MCP service. It has been synthesized, not deployed; the ladder and the anchor job are not in it
+  Lambda and the Fargate MCP service. It is deployed to us-east-1; the ladder and the anchor job are not in it
   yet.
 
 What it does **not** include: the gate-by-gate logs list what is stubbed. Notably the tools run on an in-memory
