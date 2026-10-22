@@ -1,17 +1,17 @@
 # HEARTHWARD
 
-## ⚡ Quick Evaluation & Interactive Console
+## ⚡ Quick Start & Interactive Console
 
-Judges can evaluate Hearthward in two ways:
+The Hearthward cyber-physical telemetry architecture and verification suite can be inspected in two ways:
 
-### 1. Direct Source & Spec Inspection (Browse on GitHub)
-- [Console Architecture & Entry Point](web/index.html)
-- [Wardline Telemetry Replay](web/wardline/)
-- [Canonical KMS Attestation Bundle](web/console/data/bundle.kms.json)
-- [Recorded AWS API Probes](web/console/data/probe.recorded.json)
+### 1. Specification & Canonical Artifacts (Browse on GitHub)
+- [Console Architecture & Entry Point](web/index.html) — Main verifiable evidence interface.
+- [Wardline Telemetry Replay Engine](web/wardline/) — 90-second deterministic SPRT and bitemporal state engine.
+- [Canonical KMS Attestation Bundle](web/console/data/bundle.kms.json) — Raw ECDSA P-256 signatures signed via AWS KMS in `us-east-1`.
+- [Recorded AWS Gateway Probes](web/console/data/probe.recorded.json) — Authentic endpoint responses validating Alexa+ OAuth boundaries.
 
-### 2. Live Interactive Console (Run Locally)
-Run the zero-dependency local static server:
+### 2. Local Operator Console (Zero-Dependency Runtime)
+Run the local static server:
 ```bash
 python -m http.server 8765 --directory web
 ```
@@ -76,8 +76,8 @@ The same disclosure is meant to appear on screen in the demo video.
 | Causal engine | Bitemporal fact versions, `possibly_` and `certainly_` interval relations, watermarks. Escalation may use `possibly_`; de-escalation needs `certainly_` and watermark passage | `src/hearthward/causal/` |
 | Broker | Twelve invariants (HX-01 to HX-12) as a rule table, a WebAuthn relying party, challenges bound to an action hash, single-use nonces, and a 900 s STS executor session tagged with the proof hash | `src/hearthward/authz/` |
 | Intervention ladder | A Step Functions definition: notify in parallel, then walk the family circle with callback tasks (90 s timeout, 30 s heartbeat) | `src/hearthward/ladder/` |
-| Attestation | Decisions signed by KMS, Merkle anchors for S3 Object Lock, and a standard-library-only offline verifier a judge can run | `src/hearthward/attest/`, `tools/verify_attestation.py` |
-| Web | The Console of Verifiable Claims (`web/index.html`: five claims, each opening into its evidence, its canonical bytes and a check the judge can run), the Bitemporal Causal Radar (`web/radar/index.html`), an approval page (passkey signs the action hash) and a verification page, all with no dependencies | `web/` |
+| Attestation | Decisions signed by KMS, Merkle anchors for S3 Object Lock, and a standard-library-only offline verifier an auditor can run | `src/hearthward/attest/`, `tools/verify_attestation.py` |
+| Web | The Console of Verifiable Claims (`web/index.html`: five claims, each opening into its evidence, its canonical bytes and a check auditors and operators can run), the Bitemporal Causal Radar (`web/radar/index.html`), an approval page (passkey signs the action hash) and a verification page, all with no dependencies | `web/` |
 | Infrastructure | CDK stack: tables, keys, Cognito, the two APIs, the facade Lambda, the Fargate MCP service | `infra/` |
 
 The blueprint, `docs/master_blueprint.md`, is the single source of truth. Its fenced `hearthward:*` blocks are read by
@@ -112,7 +112,7 @@ uv run python tools/pipeline.py --gate G6 --keep-going # F, G0, ..., G6 in order
 uv run pytest                                          # all Python tests
 uv run python tools/orrery.py --selftest               # the deterministic reference simulator
 uv run python tools/orrery.py --scenario doorstep_scam --envelopes
-python tools/verify_attestation.py --selftest          # the offline judge verifier (standard library only)
+python tools/verify_attestation.py --selftest          # the offline attestation verifier (standard library only)
 python tools/verify_attestation.py bundle.json         # verify a real attestation bundle
 (cd web && npm test)                                   # the web app's tests
 (cd web && python -m http.server 8000)                 # then open http://localhost:8000/ (the console), /radar/, /verify.html, /approve.html
