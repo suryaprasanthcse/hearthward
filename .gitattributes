@@ -3,3 +3,6 @@
 fixtures/** -text
 *.json -text
 *.jsonl -text
+
+# The generated console data is compared byte for byte with a fresh export; keep it LF.
+web/console/data/console_data.js -text

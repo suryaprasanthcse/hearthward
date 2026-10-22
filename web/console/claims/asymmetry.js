@@ -137,7 +137,7 @@ ${closed ? `<form class="controls edit" autocomplete="off" data-action="noop">${
 <label>exp <input name="exp" data-action="exp" type="number" value="${esc(result?.doc.exp ?? "")}"></label>
 <button type="button" data-action="asymmetry-reset" class="btn">Reset</button></form>
 ${result?.problems.length ? `<p class="fail">${esc(result.problems.join("; "))} (last valid value kept)</p>` : ""}${builder}
-<p class="note"><a href="../approve.html">approve.html</a>, the caregiver's page that signs exactly this challenge: built; the broker endpoint is not deployed.</p>` : `<p class="dim">${esc(tool.description)}</p>`}`;
+<p class="note"><a href="approve.html">approve.html</a>, the caregiver's page that signs exactly this challenge: built; the broker endpoint is not deployed.</p>` : `<p class="dim">${esc(tool.description)}</p>`}`;
   const proofItems = [];
   if (closed && result) {
     const edited = result.digest !== result.baseline;

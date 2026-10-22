@@ -63,6 +63,24 @@ export function reduce(state, action) {
       if (!PRESETS.includes(action.preset) || action.preset === state.sandboxes.walk.preset) return state;
       return { ...state, sandboxes: { ...state.sandboxes, walk: { ...state.sandboxes.walk, preset: action.preset } } };
     }
+    case "custom": // seed the sandbox from a preset (or empty) and switch to it
+      return { ...state, sandboxes: { ...state.sandboxes, walk: { ...state.sandboxes.walk, preset: "custom", observations: action.observations ?? [], terms: { ...Object.fromEntries(Object.keys(state.sandboxes.walk.terms).map((k) => [k, false])), ...(action.terms ?? {}) } } } };
+    case "obs_add": case "obs_remove": case "obs_move": case "obs_undo": case "term": {
+      const w = state.sandboxes.walk;
+      if (w.preset !== "custom") return state;
+      let { observations, terms } = w;
+      if (action.type === "obs_add") observations = [...observations, action.observation];
+      else if (action.type === "obs_undo") observations = observations.slice(0, -1);
+      else if (action.type === "obs_remove") observations = observations.filter((_, i) => i !== action.index);
+      else if (action.type === "obs_move") {
+        const to = action.index + action.delta;
+        if (to < 0 || to >= observations.length) return state;
+        observations = [...observations];
+        [observations[action.index], observations[to]] = [observations[to], observations[action.index]];
+      } else if (action.name in terms) terms = { ...terms, [action.name]: !terms[action.name] };
+      else return state;
+      return { ...state, sandboxes: { ...state.sandboxes, walk: { ...w, observations, terms } } };
+    }
     case "tamper": {
       const tamper = action.value ? 1 : 0;
       const cur = state.sandboxes.integrity;
@@ -100,6 +118,17 @@ export function reduce(state, action) {
       if (!["doorstep_scam", "late_and_lossy"].includes(action.scenario) || action.scenario === state.sandboxes.bitemporal.scenario) return state;
       return { ...state, sandboxes: { ...state.sandboxes, bitemporal: { scenario: action.scenario } } };
     }
+    case "ring_patch": {
+      const cur = state.sandboxes.boundaries;
+      const same = cur.ringBytePatch?.offset === action.offset;
+      return { ...state, sandboxes: { ...state.sandboxes, boundaries: { ringPretty: 0, ringBytePatch: same ? null : { offset: action.offset, value: action.value } } } };
+    }
+    case "ring_pretty": {
+      const cur = state.sandboxes.boundaries;
+      return { ...state, sandboxes: { ...state.sandboxes, boundaries: { ringBytePatch: null, ringPretty: cur.ringPretty ? 0 : 1 } } };
+    }
+    case "ring_reset":
+      return { ...state, sandboxes: { ...state.sandboxes, boundaries: { ringBytePatch: null, ringPretty: 0 } } };
     case "live":
       return { ...state, live: { ...state.live, [action.probe]: { status: action.status, at: action.at ?? null, response: action.response ?? null } } };
     case "hash":

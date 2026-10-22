@@ -38,4 +38,5 @@ export const needs = (state) => ({
   integrity: state.claim === "integrity" || state.claim === "walk" || state.selection?.kind === "decision" || state.selection?.kind === "envelope",
   asymmetry: state.claim === "asymmetry",
   bitemporal: state.claim === "bitemporal",
+  ring: state.claim === "boundaries",
 });

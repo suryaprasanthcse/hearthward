@@ -3,6 +3,7 @@
 import { b64ToBytes, jcsText } from "../wardline/chain.js";
 import { fmtClock, formatMnats, lrLabel, scenarioOf, shortHash } from "../wardline/model.js";
 import { ruleTitle, toolNamed } from "./claims/asymmetry.js";
+import { evidenceOf, pathOf } from "./claims/boundaries.js";
 import { badge, badges, esc } from "./provenance.js";
 
 export const TABS = Object.freeze([
@@ -106,7 +107,30 @@ function formattedOf(ctx) {
     const t = toolNamed(ctx.data, sel.id);
     return t ? `<dl>${field("tool", mono(t.name))}${field("class", mono(`${t.class} · fails ${t.fails}`))}${field("rules", t.rules.map((id) => `${mono(id)} ${esc(ruleTitle(ctx.data, id))}`).join("<br>"))}${field("description", esc(t.description))}</dl>` : "";
   }
+  if (sel.kind === "node") return formattedNode(ctx, sel.id);
+  if (sel.kind === "probe") return formattedProbe(ctx, sel.id);
   return `<p class="dim">${esc(sel.kind)} ${esc(sel.id)}</p>`;
+}
+
+function formattedNode(ctx, id) {
+  const topo = ctx.data.topology;
+  const tb = topo.tb.find((t) => t.id === id);
+  if (tb) return `<dl>${field("boundary", mono(tb.id))}${field("crossing", esc(tb.boundary))}${field("enforced by", esc(tb.mechanism))}${field("what it establishes", esc(tb.trust))}${field("section", "master blueprint §2 trust boundaries")}</dl><p>${badge("computed")} read from the blueprint table as exported</p>`;
+  const n = topo.nodes.find((x) => x.id === id);
+  if (!n) return `<p class="dim">no such node</p>`;
+  const synthetic = n.status === "synthetic" ? ` ${badge("synthetic")}` : "";
+  return `<dl>${field("node", esc(n.label))}${field("group", mono(n.group))}${field("status", esc(n.id === "console" ? `served from ${ctx.state.provenance.hosting}` : n.status))}${field("detail", esc(n.detail))}${field("source", esc(topo.source))}</dl><p>${badge("recorded")}${synthetic}</p>`;
+}
+
+function formattedProbe(ctx, id) {
+  const rec = ctx.data.recorded?.probes;
+  const p = rec?.data.probes.find((x) => x.id === id);
+  if (!p) return `<p class="dim">no recording for ${esc(id)}</p>`;
+  const live = ctx.state.live[id];
+  const ev = evidenceOf(id, p, rec.data.issuer);
+  const body = p.body_json !== null && p.body_json !== undefined ? JSON.stringify(p.body_json, null, 2) : (p.body_text ?? "");
+  return `<dl>${field("request", mono(`${p.method} ${pathOf(p.url)}`))}${field("status", mono(p.status ?? p.error))}${field("verdict", esc(ev.text))}${field("headers", `<pre class="bytes">${esc(JSON.stringify(p.headers, null, 2))}</pre>`)}
+${field("body", `<pre class="bytes">${esc(body.slice(0, 2000))}</pre>`)}${field("recorded", mono(p.at_utc))}${live?.response ? field("live", mono(`${live.response.status ?? live.response.error} at ${live.at}`)) : ""}</dl><p>${badge("recorded", p.at_utc)}</p>`;
 }
 
 // ── proof tree ──
@@ -135,7 +159,12 @@ function treeOf(ctx) {
     return `<div class="tree">${node("Claim 3", b ? b.linked && b.headAt === b.recorded : null, "a late event never rewrites the decision", b ? node("head at at_seq", b.headAt === b.recorded, shortHash(b.headAt)) + node("later envelopes", true, String(b.later)) : "")}</div>`;
   }
   if (state.claim === "walk") return `<div class="tree">${node("Claim 1", null, "see the proof row under the walk", "", ["recorded", "synthetic"])}</div>`;
-  return `<p class="dim">Nothing to verify for this claim yet.</p>`;
+  const rec = ctx.data.recorded?.probes;
+  const kids = (rec?.data.probes ?? []).map((p) => { const ev = evidenceOf(p.id, p, rec.data.issuer); return node(`${p.method} ${pathOf(p.url)}`, ev.ok, ev.text, "", ["recorded"]); }).join("");
+  const ring = derived.ring;
+  const ringKid = ring ? node("Ring X-Signature", ring.ok, `HMAC-SHA256 over ${ring.byteCount} raw bytes`, "", ["computed", "synthetic"]) : "";
+  const all = rec ? (rec.data.probes.every((p) => evidenceOf(p.id, p, rec.data.issuer).ok) && (ring?.ok ?? true)) : null;
+  return `<div class="tree">${node("Claim 5", all, "runs on AWS behind OAuth", kids + ringKid, ["recorded"])}</div>`;
 }
 
 export function inspectorView(ctx, ui) {

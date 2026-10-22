@@ -12,7 +12,7 @@ pytestmark = pytest.mark.gate_g6
 
 ROOT = Path(__file__).resolve().parents[2]
 WEB = ROOT / "web"
-INDEX = (WEB / "index.html").read_text(encoding="utf-8")
+INDEX = (WEB / "radar/index.html").read_text(encoding="utf-8")
 SOURCES = {p.name: p.read_text(encoding="utf-8") for p in (WEB / "src").glob("*.js")}
 RADAR_FILES = ("radar.js", "radar_logic.js", "fluid.js", "radar_data.js")
 
@@ -34,7 +34,7 @@ def test_the_export_is_deterministic() -> None:
 def test_the_page_has_every_panel_the_brief_names() -> None:
     for needle in ("WALD SPRT EVIDENCE ACCUMULATOR", "REAL-TIME SPRT TREND", "BITEMPORAL ORBITS", "INTERVENE ESCALATION LADDER",
                    "AUDIT LEDGER", "BELIEF SEQUENCE TIME-TRAVEL SCRUBBER", "fluid-toggle", 'id="fluid"', 'id="pyramid"',
-                   "L3", "L2", "L1", "VOICE", "PRIORITY", "ALERT", 'href="verify.html"', 'href="approve.html"'):
+                   "L3", "L2", "L1", "VOICE", "PRIORITY", "ALERT", 'href="../verify.html"', 'href="../approve.html"'):
         assert needle in INDEX, needle
     for tier in ("MDCCLXXVI", "ANNUIT COEPTIS", "TRUST CAUSALIS", "ORDO CAUSALIS"):
         assert tier in SOURCES["radar.js"], tier
@@ -52,7 +52,7 @@ def test_the_page_is_labelled_synthetic_and_claims_no_unmeasured_numbers() -> No
 
 def test_the_page_needs_no_network_beyond_its_own_files() -> None:
     assert not re.search(r"<script(?![^>]*\bsrc=)[^>]*>", INDEX) and "style=" not in INDEX and "onclick" not in INDEX
-    assert re.findall(r'<script type="module" src="(src/[a-z_]+\.js)"', INDEX) == ["src/radar.js"]
+    assert re.findall(r'<script type="module" src="(\.\./src/[a-z_]+\.js)"', INDEX) == ["../src/radar.js"]
     for name in RADAR_FILES:
         text = SOURCES[name]
         urls = [u for u in re.findall(r"https?://[^\s\"'`)]+", text) if u != "http://www.w3.org/2000/svg"]
@@ -60,7 +60,7 @@ def test_the_page_needs_no_network_beyond_its_own_files() -> None:
         assert "fetch(" not in text and "XMLHttpRequest" not in text and "WebSocket" not in text and "eval(" not in text, name
         assert ".innerHTML" not in text and "document.write" not in text, name
     for ref in re.findall(r'(?:src|href)="([^"]+)"', INDEX):
-        assert (WEB / ref).is_file(), ref
+        assert (WEB / "radar" / ref).resolve().is_file(), ref
 
 
 def test_every_import_in_the_radar_modules_resolves_to_a_file() -> None:

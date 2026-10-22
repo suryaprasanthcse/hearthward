@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import hashlib
+import hmac
 import json
+import random
 import shutil
 import subprocess
 from pathlib import Path
@@ -12,6 +15,7 @@ import pytest
 import verify_attestation as va
 
 from hearthward.authz.broker import action_hash
+from hearthward.decision.hmm import lambda_trace_mnats
 
 pytestmark = pytest.mark.gate_g6
 
@@ -102,6 +106,52 @@ def test_a_tampered_bundle_downloaded_from_the_console_fails_the_python_verifier
     assert failed == {"ledger replay"}, failed  # the signature over the record still verifies; the chain does not
     intact = _node(script.replace("tamper: 1", "tamper: 0"))
     assert all(c.ok for c in va.verify_bundle(json.loads(intact)))
+
+
+def test_the_browser_ring_hmac_equals_python_and_the_manifest_and_the_flip_fails() -> None:
+    sample = (ROOT / "fixtures" / "ring" / "sample.json").read_bytes()
+    manifest = json.loads((ROOT / "fixtures" / "ring" / "manifest.json").read_bytes())
+    mac = "sha256=" + hmac.new(export.orrery.SYNTHETIC_RING_KEY, sample, hashlib.sha256).hexdigest()
+    assert mac == manifest["x_signature"] == export.build()["ring"]["x_signature"]
+    script = ("import { CONSOLE } from './console/data/console_data.js';"
+              "import { computeRing } from './console/claims/boundaries.js';"
+              "const ok = await computeRing(CONSOLE, { ringBytePatch: null, ringPretty: 0 });"
+              "const flip = await computeRing(CONSOLE, { ringBytePatch: { offset: 7, value: 0 }, ringPretty: 0 });"
+              "process.stdout.write(JSON.stringify([ok.header, ok.ok, flip.ok]));")
+    assert json.loads(_node(script)) == [mac, True, False]
+
+
+def test_the_trust_boundaries_are_the_blueprints_eight() -> None:
+    tb = export.build()["topology"]["tb"]
+    assert [t["id"] for t in tb] == [f"TB-{i}" for i in range(1, 9)]
+    assert "HMAC-SHA256 over raw body bytes" in tb[2]["mechanism"]
+
+
+def _parity_cases() -> list[list]:
+    sprt = export.orrery.load_spec()["sprt"]
+    cases = [*export.orrery.CONFORMANCE_VECTORS, *(w["observations"] for w in export.build()["walk"].values())]
+    rng = random.Random(11)
+    for _ in range(300):
+        line = []
+        for _ in range(rng.randint(1, 14)):
+            picked = rng.sample(sprt["features"], rng.randint(0, len(sprt["features"])))
+            line.append({"claim": picked} if rng.random() < 0.25 else picked)
+        cases.append(line)
+    return cases
+
+
+def test_the_browser_hmm_equals_both_python_references_to_the_milli_nat() -> None:
+    """HMM parity (§6.2): every conformance vector, the three presets and 300 seeded random runs, integer equality."""
+    assert NODE, "node is required to test the console"
+    sprt = export.orrery.load_spec()["sprt"]
+    cases = _parity_cases()
+    proc = subprocess.run([NODE, str(CONSOLE / "tests" / "hmm_cli.mjs")], input=json.dumps(
+        [{"observations": c, "params": sprt} for c in cases]), capture_output=True, text=True, timeout=120)
+    assert proc.returncode == 0, proc.stderr[-2000:]
+    traces = json.loads(proc.stdout)
+    assert len(traces) == len(cases) >= len(export.orrery.CONFORMANCE_VECTORS) + 303
+    for observations, got in zip(cases, traces, strict=True):
+        assert got == export.orrery.reference_trace_mnats(observations, sprt) == lambda_trace_mnats(observations, sprt)
 
 
 def test_the_node_suites_pass() -> None:

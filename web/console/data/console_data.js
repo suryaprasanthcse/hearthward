@@ -668,6 +668,13 @@ export const CONSOLE = {
    "file_sha256": "049cf6069cc8f8998b9c8cece61dee1d947e0dc24fb8c9ca0b493f22f5275e90"
   }
  },
+ "ring": {
+  "body_b64": "eyJtZXRhIjogeyJ2ZXJzaW9uIjogIjEuMSIsICJ0aW1lIjogIjIwMjYtMTAtMjBUMDk6MDA6MDEuMzc1MDAwMDAwWiIsICJyZXF1ZXN0X2lkIjogIjBlZTBjNWY1LTg5YjYtNDhkYS05MmM4LThjYjRjOGYxNzAxYiIsICJhY2NvdW50X2lkIjogImF2YTEucmluZy5hY2NvdW50LlNZTlRIRVRJQyJ9LCAiZGF0YSI6IHsiaWQiOiAiZGV2X2Zyb250X2Rvb3JfbW90aW9uX2RldGVjdGVkXzE3OTI0ODY4MDA4MDAiLCAidHlwZSI6ICJtb3Rpb25fZGV0ZWN0ZWQiLCAiYXR0cmlidXRlcyI6IHsic291cmNlIjogImRldl9mcm9udF9kb29yIiwgInNvdXJjZV90eXBlIjogImRldmljZXMiLCAidGltZXN0YW1wIjogMTc5MjQ4NjgwMDgwMCwgInN1Yl90eXBlIjogImh1bWFuIn0sICJyZWxhdGlvbnNoaXBzIjogeyJkZXZpY2VzIjogeyJsaW5rcyI6IHsic2VsZiI6ICIvdjEvZGV2aWNlcy9kZXZfZnJvbnRfZG9vciJ9fX19fQ==",
+  "file": "fixtures/ring/sample.json",
+  "key_label": "synthetic",
+  "synthetic_key": "hw-synthetic-ring-signing-key",
+  "x_signature": "sha256=4a1df7a993b95d820b32de19ffb5f95fe4a2ba25663afd883bcfefc301a9c98e"
+ },
  "seed": 7,
  "spec": {
   "hx": [
@@ -813,6 +820,157 @@ export const CONSOLE = {
     "remote_access",
     "pressure",
     "info_request"
+   ]
+  },
+  "sprt_params": {
+   "alpha": 0.01,
+   "beta": 0.05,
+   "cooldown_ms": 1800000,
+   "cross_device_llr": {
+    "door_unknown_overlap": 0.7,
+    "identity_mismatch": 3.0,
+    "untrusted_org_irreversible_payment": 1.2,
+    "verified_official_callback": -3.5
+   },
+   "emissions": [
+    [
+     0.06,
+     0.06,
+     0.01,
+     0.02,
+     0.01,
+     0.04,
+     0.03
+    ],
+    [
+     0.4,
+     0.08,
+     0.02,
+     0.03,
+     0.03,
+     0.08,
+     0.08
+    ],
+    [
+     0.45,
+     0.15,
+     0.05,
+     0.06,
+     0.1,
+     0.15,
+     0.2
+    ],
+    [
+     0.15,
+     0.4,
+     0.3,
+     0.12,
+     0.08,
+     0.45,
+     0.1
+    ],
+    [
+     0.12,
+     0.3,
+     0.2,
+     0.55,
+     0.3,
+     0.25,
+     0.35
+    ]
+   ],
+   "extractor": {
+    "fpr": [
+     0.02,
+     0.02,
+     0.02,
+     0.02,
+     0.02,
+     0.02,
+     0.02
+    ],
+    "tpr": [
+     0.85,
+     0.85,
+     0.85,
+     0.85,
+     0.85,
+     0.85,
+     0.85
+    ]
+   },
+   "features": [
+    "authority",
+    "urgency",
+    "secrecy",
+    "payment",
+    "remote_access",
+    "pressure",
+    "info_request"
+   ],
+   "h0": [
+    0.06,
+    0.06,
+    0.01,
+    0.02,
+    0.01,
+    0.04,
+    0.03
+   ],
+   "initial": [
+    0.5,
+    0.3,
+    0.1,
+    0.1,
+    0.0
+   ],
+   "stages": [
+    "benign",
+    "pretext",
+    "authority",
+    "pressure",
+    "extraction"
+   ],
+   "thresholds_reported": {
+    "A": 4.554,
+    "B": -2.986
+   },
+   "transitions": [
+    [
+     0.85,
+     0.1,
+     0.03,
+     0.02,
+     0.0
+    ],
+    [
+     0.0,
+     0.55,
+     0.3,
+     0.12,
+     0.03
+    ],
+    [
+     0.0,
+     0.0,
+     0.5,
+     0.35,
+     0.15
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     0.55,
+     0.45
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
    ]
   },
   "tools": [
@@ -1213,6 +1371,226 @@ export const CONSOLE = {
   ]
  },
  "synthetic": true,
+ "topology": {
+  "nodes": [
+   {
+    "detail": "Calls POST /mcp with an OAuth 2.1 bearer token. Account linking is not yet attested.",
+    "group": "external",
+    "id": "alexa",
+    "label": "Alexa+",
+    "status": "external"
+   },
+   {
+    "detail": "deployed (probe-verified 2026-10-21): POST /mcp without a token answers 401, no WWW-Authenticate.",
+    "group": "api",
+    "id": "mcp_api",
+    "label": "mcp HTTP API",
+    "status": "deployed"
+   },
+   {
+    "detail": "Deployed; the ALB target is healthy (STATE.md).",
+    "group": "api",
+    "id": "alb",
+    "label": "VPC Link \u00b7 internal ALB",
+    "status": "deployed"
+   },
+   {
+    "detail": "Deployed; the task is running.",
+    "group": "compute",
+    "id": "mcp",
+    "label": "Fargate: mcp",
+    "status": "deployed"
+   },
+   {
+    "detail": "Built and tested (G4); not in the deployed stack.",
+    "group": "compute",
+    "id": "fusion",
+    "label": "fusion (decision core)",
+    "status": "built"
+   },
+   {
+    "detail": "Binding to the real GNOMON graph is an open item.",
+    "group": "data",
+    "id": "falkordb",
+    "label": "FalkorDB",
+    "status": "deferred"
+   },
+   {
+    "detail": "The orrery labels tactics by hand; schema-validated enums only (TB-7).",
+    "group": "compute",
+    "id": "bedrock",
+    "label": "Bedrock extractor",
+    "status": "deferred"
+   },
+   {
+    "detail": "deployed (probe-verified 2026-10-21): RFC 8414 metadata advertises S256; /jwks is served.",
+    "group": "api",
+    "id": "auth_api",
+    "label": "auth HTTP API (facade)",
+    "status": "deployed"
+   },
+   {
+    "detail": "Deployed; /authorize redirects to managed login.",
+    "group": "identity",
+    "id": "cognito",
+    "label": "Cognito user pool",
+    "status": "deployed"
+   },
+   {
+    "detail": "Deployed; its public key is what /jwks serves.",
+    "group": "kms",
+    "id": "facade_kms",
+    "label": "KMS facade-token-signer",
+    "status": "deployed"
+   },
+   {
+    "detail": "Synthetic-only: no real Ring device or API is used.",
+    "group": "source",
+    "id": "ring",
+    "label": "Ring (synthetic)",
+    "status": "synthetic"
+   },
+   {
+    "detail": "Synthetic-only: no real Bee device or API is used.",
+    "group": "source",
+    "id": "bee",
+    "label": "Bee (synthetic)",
+    "status": "synthetic"
+   },
+   {
+    "detail": "Built and tested (G1); not in the deployed stack.",
+    "group": "compute",
+    "id": "ingest",
+    "label": "ring_ingest \u00b7 bee_ingest",
+    "status": "built"
+   },
+   {
+    "detail": "Deployed (four tables, customer-managed KMS key).",
+    "group": "data",
+    "id": "ledger",
+    "label": "DynamoDB EventLedger",
+    "status": "deployed"
+   },
+   {
+    "detail": "Deployed; IAM denies the mcp role any write (TB-5).",
+    "group": "data",
+    "id": "security_state",
+    "label": "DynamoDB SecurityState",
+    "status": "deployed"
+   },
+   {
+    "detail": "Verification is display-only (TB-8).",
+    "group": "client",
+    "id": "console",
+    "label": "this console (browser)",
+    "status": "local"
+   },
+   {
+    "detail": "Deployed; it signed web/console/data/bundle.kms.json (recorded).",
+    "group": "kms",
+    "id": "attest_kms",
+    "label": "KMS attest-signer",
+    "status": "deployed"
+   },
+   {
+    "detail": "The page is built; the broker endpoint it calls is not deployed.",
+    "group": "client",
+    "id": "caregiver",
+    "label": "Caregiver device (approve.html)",
+    "status": "built"
+   },
+   {
+    "detail": "Built and tested (G5); not deployed.",
+    "group": "compute",
+    "id": "broker",
+    "label": "broker (Lambda)",
+    "status": "built"
+   },
+   {
+    "detail": "Built and tested (G5); not deployed.",
+    "group": "compute",
+    "id": "ladder",
+    "label": "Step Functions ladder",
+    "status": "built"
+   },
+   {
+    "detail": "Deferred: the ladder stops at L2.",
+    "group": "compute",
+    "id": "l3",
+    "label": "L3 outbound call",
+    "status": "deferred"
+   },
+   {
+    "detail": "Built (G6); the bucket and job are not deployed.",
+    "group": "data",
+    "id": "anchor",
+    "label": "S3 Object Lock anchor",
+    "status": "built"
+   }
+  ],
+  "probe_requests": {
+   "mcp_no_token": {
+    "body": "{\"jsonrpc\": \"2.0\", \"id\": 1, \"method\": \"tools/call\", \"params\": {\"name\": \"explain_last_alert\", \"arguments\": {}}}",
+    "headers": {
+     "Accept": "application/json, text/event-stream",
+     "Content-Type": "application/json",
+     "MCP-Protocol-Version": "2025-03-26"
+    },
+    "method": "POST"
+   }
+  },
+  "source": "STATE.md (Deployment 2026-10-21) and infra/app.py",
+  "tb": [
+   {
+    "boundary": "Internet \u2192 `POST /mcp`",
+    "id": "TB-1",
+    "mechanism": "OAuth 2.1 bearer token (Cognito user token or fa\u00e7ade service token)",
+    "trust": "The **household** principal. Never the speaker."
+   },
+   {
+    "boundary": "Alexa+ LLM arguments \u2192 tool handler",
+    "id": "TB-2",
+    "mechanism": "none beyond TB-1",
+    "trust": "Arguments are **claims** (trust `claimed`)"
+   },
+   {
+    "boundary": "Ring webhook \u2192 `ring_ingest`",
+    "id": "TB-3",
+    "mechanism": "`X-Signature: sha256=<hex>`, HMAC-SHA256 over raw body bytes",
+    "trust": "Authentic Ring delivery, trust `observed`"
+   },
+   {
+    "boundary": "Bee bridge \u2192 `bee_ingest`",
+    "id": "TB-4",
+    "mechanism": "Bridge HMAC over the raw line",
+    "trust": "Authentic bridge delivery, trust `observed`"
+   },
+   {
+    "boundary": "`mcp` \u2192 security state",
+    "id": "TB-5",
+    "mechanism": "IAM explicitly denies the `mcp` role any write to `SecurityState`",
+    "trust": "Only broker-minted executor sessions can write"
+   },
+   {
+    "boundary": "Caregiver device \u2192 broker",
+    "id": "TB-6",
+    "mechanism": "WebAuthn assertion whose challenge is the action hash",
+    "trust": "A specific circle member approved a specific action"
+   },
+   {
+    "boundary": "Bedrock output \u2192 decision core",
+    "id": "TB-7",
+    "mechanism": "Schema-validated enum features only",
+    "trust": "Observations; free text never reaches a privileged prompt"
+   },
+   {
+    "boundary": "Server \u2192 web presentation",
+    "id": "TB-8",
+    "mechanism": "KMS signature over the exact bytes",
+    "trust": "Display only; the browser never makes authorization decisions"
+   }
+  ]
+ },
  "walk": {
   "benign_delivery": {
    "cross_terms": [

@@ -19,6 +19,7 @@ import argparse
 import base64
 import hashlib
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -28,6 +29,7 @@ sys.path.insert(0, str(ROOT / "tools"))
 sys.path.insert(0, str(ROOT / "web" / "wardline"))  # read-only import: the scenario runner Wardline already uses
 import export_data as wardline_data  # noqa: E402
 import orrery  # noqa: E402
+import record_probe  # noqa: E402
 
 OUT = ROOT / "web" / "console" / "data" / "console_data.js"
 DATA_DIR = OUT.parent
@@ -100,6 +102,58 @@ def action_example(ward: dict[str, Any]) -> dict[str, Any]:
                          "nonce": nonce.rstrip(b"=").decode("ascii"), "exp": ward["epoch_ms"] + 360_000}}
 
 
+# Deployment status per node, from STATE.md ("Deployment (2026-10-21)" and "Open items") and infra/app.py, which
+# defines what the deployed stack contains. Anything not in the stack is built or deferred, never "deployed" (T-4).
+DEPLOYED = "deployed (probe-verified 2026-10-21)"
+TOPOLOGY = [
+    ("alexa", "Alexa+", "external", "external", "Calls POST /mcp with an OAuth 2.1 bearer token. Account linking is not yet attested."),
+    ("mcp_api", "mcp HTTP API", "api", "deployed", DEPLOYED + ": POST /mcp without a token answers 401, no WWW-Authenticate."),
+    ("alb", "VPC Link · internal ALB", "api", "deployed", "Deployed; the ALB target is healthy (STATE.md)."),
+    ("mcp", "Fargate: mcp", "compute", "deployed", "Deployed; the task is running."),
+    ("fusion", "fusion (decision core)", "compute", "built", "Built and tested (G4); not in the deployed stack."),
+    ("falkordb", "FalkorDB", "data", "deferred", "Binding to the real GNOMON graph is an open item."),
+    ("bedrock", "Bedrock extractor", "compute", "deferred", "The orrery labels tactics by hand; schema-validated enums only (TB-7)."),
+    ("auth_api", "auth HTTP API (facade)", "api", "deployed", DEPLOYED + ": RFC 8414 metadata advertises S256; /jwks is served."),
+    ("cognito", "Cognito user pool", "identity", "deployed", "Deployed; /authorize redirects to managed login."),
+    ("facade_kms", "KMS facade-token-signer", "kms", "deployed", "Deployed; its public key is what /jwks serves."),
+    ("ring", "Ring (synthetic)", "source", "synthetic", "Synthetic-only: no real Ring device or API is used."),
+    ("bee", "Bee (synthetic)", "source", "synthetic", "Synthetic-only: no real Bee device or API is used."),
+    ("ingest", "ring_ingest · bee_ingest", "compute", "built", "Built and tested (G1); not in the deployed stack."),
+    ("ledger", "DynamoDB EventLedger", "data", "deployed", "Deployed (four tables, customer-managed KMS key)."),
+    ("security_state", "DynamoDB SecurityState", "data", "deployed", "Deployed; IAM denies the mcp role any write (TB-5)."),
+    ("console", "this console (browser)", "client", "local", "Verification is display-only (TB-8)."),
+    ("attest_kms", "KMS attest-signer", "kms", "deployed", "Deployed; it signed web/console/data/bundle.kms.json (recorded)."),
+    ("caregiver", "Caregiver device (approve.html)", "client", "built", "The page is built; the broker endpoint it calls is not deployed."),
+    ("broker", "broker (Lambda)", "compute", "built", "Built and tested (G5); not deployed."),
+    ("ladder", "Step Functions ladder", "compute", "built", "Built and tested (G5); not deployed."),
+    ("l3", "L3 outbound call", "compute", "deferred", "Deferred: the ladder stops at L2."),
+    ("anchor", "S3 Object Lock anchor", "data", "built", "Built (G6); the bucket and job are not deployed."),
+]
+
+
+def trust_boundaries() -> list[dict[str, str]]:
+    """TB-1..TB-8 from the master blueprint's table, so the map never restates them by hand."""
+    text = (ROOT / "docs" / "master_blueprint.md").read_text(encoding="utf-8")
+    rows = re.findall(r"^\| (TB-[1-8]) \| (.+?) \| (.+?) \| (.+?) \|\s*$", text, re.M)
+    assert [r[0] for r in rows] == [f"TB-{i}" for i in range(1, 9)], rows
+    return [{"id": a, "boundary": b, "mechanism": c, "trust": d} for a, b, c, d in rows]
+
+
+def ring_sample() -> dict[str, Any]:
+    manifest = json.loads((ROOT / "fixtures" / "ring" / "manifest.json").read_bytes())
+    raw = (ROOT / "fixtures" / "ring" / manifest["file"]).read_bytes()
+    assert hashlib.sha256(raw).hexdigest() == manifest["sha256"]
+    return {"file": "fixtures/ring/" + manifest["file"], "body_b64": base64.b64encode(raw).decode("ascii"),
+            "x_signature": manifest["x_signature"], "key_label": manifest["key_label"],
+            "synthetic_key": orrery.SYNTHETIC_RING_KEY.decode("ascii")}
+
+
+def probe_requests() -> dict[str, Any]:
+    """The requests record_probe.py sends, so a judge can replay them with curl."""
+    return {"mcp_no_token": {"method": "POST", "headers": record_probe.MCP_HEADERS,
+                             "body": json.dumps(record_probe.CALL)}}
+
+
 def build() -> dict[str, Any]:
     spec = orrery.load_spec()
     ward = wardline_data.build()
@@ -110,12 +164,16 @@ def build() -> dict[str, Any]:
     data = {
         "synthetic": True, "seed": wardline_data.SEED,
         "ward": ward,
-        "spec": {"hx": spec["hx"], "tools": tools_view(spec),
+        "spec": {"hx": spec["hx"], "tools": tools_view(spec), "sprt_params": sprt,
                  "sprt": {"alpha": sprt["alpha"], "beta": sprt["beta"], "a_mnats": ward["sprt"]["a_mnats"],
                           "b_mnats": ward["sprt"]["b_mnats"], "features": sprt["features"],
                           "cross_device_llr_mnats": ward["sprt"]["cross_device_llr_mnats"]}},
         "walk": {name: walk_preset(name, ward["scenarios"][name], sprt) for name in PRESETS},
         "action": action_example(ward),
+        "topology": {"source": "STATE.md (Deployment 2026-10-21) and infra/app.py",
+                     "nodes": [{"id": i, "label": l, "group": g, "status": st, "detail": d} for i, l, g, st, d in TOPOLOGY],
+                     "tb": trust_boundaries(), "probe_requests": probe_requests()},
+        "ring": ring_sample(),
         "recorded": {"bundle": recorded("bundle.kms.json"), "probes": recorded("probe.recorded.json")},
     }
     return data
@@ -123,7 +181,7 @@ def build() -> dict[str, Any]:
 
 def check_profile(value: Any, path: str = "$") -> None:
     """The orrery-derived parts hold integers only (C-2). `recorded` is verbatim, and the Wald parameters are decimals."""
-    if path.startswith("$.recorded") or path in ("$.spec.sprt.alpha", "$.spec.sprt.beta"):
+    if path.startswith(("$.recorded", "$.spec.sprt_params")) or path in ("$.spec.sprt.alpha", "$.spec.sprt.beta"):
         return
     if isinstance(value, float):
         raise ValueError(f"{path}: unexpected float {value}")

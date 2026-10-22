@@ -125,7 +125,7 @@ test("the walk presets switch, and an S+ tool shows the pass-through path", asyn
 test("the navigation marks the current claim, and only the needed derived values are requested", () => {
   const state = reduce(fresh(), { type: "claim", claim: "integrity" });
   assert.match(navHtml(state), /class="navbtn on" data-action="claim" data-claim="integrity" aria-current="page"/);
-  assert.deepEqual(needs(state), { integrity: true, asymmetry: false, bitemporal: false });
+  assert.deepEqual(needs(state), { integrity: true, asymmetry: false, bitemporal: false, ring: false });
   assert.equal(needs(reduce(fresh(), { type: "claim", claim: "boundaries" })).integrity, false);
 });
 

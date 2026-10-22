@@ -55,7 +55,7 @@ The same disclosure is meant to appear on screen in the demo video.
 | Broker | Twelve invariants (HX-01 to HX-12) as a rule table, a WebAuthn relying party, challenges bound to an action hash, single-use nonces, and a 900 s STS executor session tagged with the proof hash | `src/hearthward/authz/` |
 | Intervention ladder | A Step Functions definition: notify in parallel, then walk the family circle with callback tasks (90 s timeout, 30 s heartbeat) | `src/hearthward/ladder/` |
 | Attestation | Decisions signed by KMS, Merkle anchors for S3 Object Lock, and a standard-library-only offline verifier a judge can run | `src/hearthward/attest/`, `tools/verify_attestation.py` |
-| Web | The Bitemporal Causal Radar (`web/index.html`: a WebGL fluid background, a gaze-tracking pyramid, the SPRT gauge, bitemporal orbits and a belief-sequence scrubber, replaying one synthetic scenario), an approval page (passkey signs the action hash) and a verification page, all with no dependencies | `web/` |
+| Web | The Console of Verifiable Claims (`web/index.html`: five claims, each opening into its evidence, its canonical bytes and a check the judge can run), the Bitemporal Causal Radar (`web/radar/index.html`), an approval page (passkey signs the action hash) and a verification page, all with no dependencies | `web/` |
 | Infrastructure | CDK stack: tables, keys, Cognito, the two APIs, the facade Lambda, the Fargate MCP service | `infra/` |
 
 The blueprint, `docs/master_blueprint.md`, is the single source of truth. Its fenced `hearthward:*` blocks are read by
@@ -93,12 +93,27 @@ uv run python tools/orrery.py --scenario doorstep_scam --envelopes
 python tools/verify_attestation.py --selftest          # the offline judge verifier (standard library only)
 python tools/verify_attestation.py bundle.json         # verify a real attestation bundle
 (cd web && npm test)                                   # the web app's tests
-(cd web && python -m http.server 8000)                 # then open http://localhost:8000/ (the radar), /verify.html, /approve.html
+(cd web && python -m http.server 8000)                 # then open http://localhost:8000/ (the console), /radar/, /verify.html, /approve.html
 uv run python tools/export_ui_scenario.py              # regenerate the radar's synthetic scenario from the orrery
+uv run python tools/export_console_data.py             # regenerate the console's data from the orrery, the spec and the recorded evidence
 (cd infra && uv run python app.py)                     # synthesize the CDK app; calls no AWS API
 ```
 
-The radar page needs an HTTP server (it is made of ES modules, which browsers will not load from `file://`). It replays a
+### The console, its deep links and its badges
+
+`web/index.html` is the Console of Verifiable Claims. Each claim has a deep link:
+
+- [`#claim=walk&seq=8`](http://localhost:8000/#claim=walk&seq=8): Wald's test crosses A at observation 4 (a sandbox recomputes it in the browser)
+- [`#claim=asymmetry&seq=11`](http://localhost:8000/#claim=asymmetry&seq=11): a voice in the room asks to dismiss the alert and is blocked
+- [`#claim=bitemporal&seq=7`](http://localhost:8000/#claim=bitemporal&seq=7): late and duplicate data never rewrite the decision
+- [`#claim=integrity&tamper=1`](http://localhost:8000/#claim=integrity&tamper=1) and [`&rechain=1`](http://localhost:8000/#claim=integrity&tamper=1&rechain=1): the hash chain opens, and a re-chain is still caught by the signed head
+- [`#claim=boundaries`](http://localhost:8000/#claim=boundaries): the architecture map, the recorded probes and the Ring raw-bytes sandbox
+
+Every value carries a badge: **LIVE** (fetched now from the deployed stack), **COMPUTED** (computed in your browser from shipped bytes),
+**RECORDED** (captured earlier by a named, human-run tool), and **SYNTHETIC** (produced by the orrery, seed 7). The decision signature is a
+real AWS KMS signature over a synthetic record (`tools/sign_console_bundle.py`); Ring and Bee are synthetic only.
+
+The pages need an HTTP server (they are made of ES modules, which browsers will not load from `file://`). The radar replays a
 synthetic orrery run, shows the frame rate it actually measures, and pauses its fluid by default when the browser asks
 for reduced motion.
 

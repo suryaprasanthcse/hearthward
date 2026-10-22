@@ -8,13 +8,14 @@ const root = new URL("../", import.meta.url);
 const read = (path) => readFileSync(new URL(path, root), "utf8");
 const jsFiles = ["app.js", "store.js", "provenance.js", "inspector.js", "views.js",
   ...readdirSync(new URL("claims/", root)).map((f) => `claims/${f}`)];
-const html = read("index.html");
+const html = readFileSync(new URL("../../index.html", import.meta.url), "utf8"); // web/index.html mounts the console
 const css = read("console.css");
 
 test("index.html: the CSP, one module script, nothing inline", () => {
   assert.match(html, /<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'none'">/);
   const scripts = [...html.matchAll(/<script\b[^>]*>/g)].map((m) => m[0]);
-  assert.deepEqual(scripts, ['<script type="module" src="app.js">']);
+  assert.deepEqual(scripts, ['<script type="module" src="console/app.js">']);
+  assert.match(html, /<link rel="stylesheet" href="console\/console\.css">/);
   assert.equal(/<style\b/i.test(html), false);
   assert.equal(/\sstyle\s*=/i.test(html), false);
   assert.equal(/\son[a-z]+\s*=/i.test(html), false);
@@ -40,7 +41,7 @@ test("T-1: no source states a system status as a literal", () => {
 });
 
 test("T-2, T-3: no performance claims, no device names, no 'intercept'", () => {
-  for (const file of [...jsFiles, "index.html", "console.css"]) {
+  for (const file of [...jsFiles, "console.css"]) {
     const raw = read(file);
     assert.equal(/BLE/.test(raw), false, `${file}: BLE`);
     const src = raw.toLowerCase();
@@ -51,7 +52,7 @@ test("T-2, T-3: no performance claims, no device names, no 'intercept'", () => {
 });
 
 test("no http(s) URL appears except the SVG namespace, and fetch( is confined to boundaries.js", () => {
-  for (const file of [...jsFiles, "index.html", "console.css"]) {
+  for (const file of [...jsFiles, "console.css"]) {
     const src = read(file);
     const urls = [...src.matchAll(/https?:\/\/[^\s"'`)]+/g)].map((m) => m[0]).filter((u) => u !== "http://www.w3.org/2000/svg");
     assert.deepEqual(urls, [], `${file}: URLs`);

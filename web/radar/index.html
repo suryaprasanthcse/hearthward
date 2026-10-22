@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' blob:; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>HEARTHWARD // Bitemporal Causal Radar</title>
+  <link rel="stylesheet" href="../src/radar.css">
+</head>
+<body>
+  <canvas id="fluid" aria-hidden="true"></canvas>
+  <svg id="gaze-overlay" aria-hidden="true"><line id="gaze-line" x1="0" y1="0" x2="0" y2="0"/><circle id="gaze-ring" r="14" cx="0" cy="0"/><circle id="gaze-dot" r="2.5" cx="0" cy="0"/></svg>
+
+  <header class="hud">
+    <div>
+      <h1>HEARTHWARD <span class="slash">//</span> BITEMPORAL CAUSAL RADAR</h1>
+      <p class="byline">BY SURYA PRASANTH R</p>
+    </div>
+    <div class="hud-right">
+      <p class="badge" id="data-badge">SYNTHETIC DEMO DATA &middot; REPLAY OF ORRERY <span id="scenario-name"></span></p>
+      <button id="fluid-toggle" type="button" aria-pressed="true">[ FLUID DYNAMICS: ACTIVE ]</button>
+      <nav class="links" aria-label="Verification pages">
+        <a href="../verify.html">VERIFY A DECISION</a>
+        <a href="../approve.html">APPROVAL PAGE</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="grid">
+    <section class="panel sprt" aria-labelledby="sprt-title">
+      <h2 id="sprt-title">WALD SPRT EVIDENCE ACCUMULATOR</h2>
+      <div class="sprt-body">
+        <div class="eqs" aria-label="Wald's bounds">
+          <p>&Lambda;<sub>t</sub> = ln L<sub>1,t</sub> &minus; ln L<sub>0,t</sub> + &Sigma; terms</p>
+          <p>A = ln((1&minus;&beta;)/&alpha;) = +4.554 &rarr; 4554 mnats</p>
+          <p>B = ln(&beta;/(1&minus;&alpha;)) = &minus;2.986 &rarr; &minus;2986 mnats</p>
+        </div>
+        <svg id="gauge" viewBox="0 0 300 300" role="img" aria-label="Evidence gauge"></svg>
+        <div class="waves">
+          <figure><figcaption>&Delta;&Lambda; TELEMETRY (per-event deltas)</figcaption><canvas id="wave-delta" width="220" height="54"></canvas></figure>
+          <figure><figcaption>EVENT CADENCE (inter-arrival times)</figcaption><canvas id="wave-cadence" width="220" height="54"></canvas></figure>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel trend" aria-labelledby="trend-title">
+      <h2 id="trend-title">REAL-TIME SPRT TREND</h2>
+      <p class="sub">VISUAL / VECTOR TELEMETRY &middot; &Lambda; after each ledger event, in integer milli-nats</p>
+      <svg id="trend" viewBox="0 0 720 190" preserveAspectRatio="none" role="img" aria-label="Evidence trend"></svg>
+    </section>
+
+    <section class="panel ladder" aria-labelledby="ladder-title">
+      <h2 id="ladder-title">INTERVENE ESCALATION LADDER</h2>
+      <div class="ladder-body">
+        <ol class="steps" id="ladder">
+          <li id="l3" class="step"><span class="lvl">L3</span><span class="card">VOICE</span><span class="state"></span></li>
+          <li id="l2" class="step"><span class="lvl">L2</span><span class="card">PRIORITY</span><span class="state"></span></li>
+          <li id="l1" class="step"><span class="lvl">L1</span><span class="card">ALERT</span><span class="state"></span></li>
+        </ol>
+        <p id="ladder-note" class="ladder-note">STANDBY</p>
+      </div>
+    </section>
+
+    <section class="panel orbits" aria-labelledby="orbits-title">
+      <h2 id="orbits-title">BITEMPORAL ORBITS &amp; CAUSAL HORIZONS</h2>
+      <svg id="orbit-svg" viewBox="0 0 960 250" role="img" aria-label="Sensor orbits with valid-time brackets and belief watermarks"></svg>
+    </section>
+
+    <section class="panel audit" aria-labelledby="audit-title">
+      <h2 id="audit-title">AUDIT LEDGER &amp; ENCRYPTION PROOFS</h2>
+      <div class="hashes" id="hashes" aria-live="polite"></div>
+      <ul class="proofs" id="proofs"></ul>
+      <a id="bundle-link" class="download" download="hearthward-radar-attestation.json">DOWNLOAD ATTESTATION BUNDLE (synthetic key) &rarr; drop it into verify.html</a>
+    </section>
+
+    <section class="panel scrub" aria-labelledby="scrub-title">
+      <h2 id="scrub-title">BELIEF SEQUENCE TIME-TRAVEL SCRUBBER</h2>
+      <p class="sub" id="scrub-help">Drag to choose the ledger sequence the system believed; everything on this page is recomputed as of that sequence.</p>
+      <div class="scrub-row">
+        <span>1..</span>
+        <input id="seq" type="range" min="1" max="12" step="1" value="12" aria-label="Belief sequence" aria-describedby="scrub-help">
+        <span>..<b id="seq-max">N</b></span>
+        <output id="seq-out" for="seq">seq 12</output>
+        <button id="play" type="button">&#9654; REPLAY</button>
+      </div>
+    </section>
+
+    <section class="pyramid" aria-label="Pyramid of Causal Providence">
+      <svg id="pyramid" viewBox="0 0 640 560" role="group" aria-label="Pyramid of Causal Providence with the causal eye"></svg>
+    </section>
+  </main>
+
+  <script type="module" src="../src/radar.js"></script>
+</body>
+</html>

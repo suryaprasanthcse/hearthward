@@ -136,3 +136,22 @@ pre.bytes { margin: 8px 0; padding: 8px; background: var(--bg-0); border: 1px so
   .walk { flex-direction: column; } .readout, .side { flex: none; width: 100%; }
 }
 @media (prefers-reduced-motion: no-preference) { #inspector { transition: transform .18s ease-out; } }
+
+/* Claim 5 */
+.map-node { fill: var(--bg-2); stroke: var(--ink-2); stroke-width: 1.5; }
+.st-deployed .map-node, .map-node.st-deployed { stroke: var(--toward-benign); stroke-dasharray: none; }
+.st-built .map-node, .map-node.st-built { stroke: var(--toward-scam); stroke-dasharray: 6 3; }
+.st-deferred .map-node, .map-node.st-deferred { stroke: var(--ink-3); stroke-dasharray: 2 3; }
+.st-external .map-node { stroke: var(--verified); }
+.node-g, .tb { cursor: pointer; } .node-g.sel .map-node { stroke-width: 3; }
+.edge { stroke: var(--line-2); stroke-width: 1.5; }
+.tb-line { stroke: var(--intervene); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.tb-dot { fill: var(--bg-0); stroke: var(--intervene); stroke-width: 1.5; } .tb.sel .tb-dot { stroke-width: 3; }
+.hex { font-family: var(--font-data); font-size: 12px; margin: 8px 0; max-height: 320px; overflow: auto; }
+.hexrow { display: flex; gap: 2px; align-items: center; } .hexrow > span { width: 3.5em; }
+.hexb { width: 24px; height: 20px; padding: 0; background: var(--bg-0); border: 1px solid var(--line-1); font: inherit; cursor: pointer; }
+.hexb.patched { background: var(--intervene); color: var(--bg-0); } .hexb:disabled { opacity: .5; cursor: default; }
+.tactic, .term { display: inline-flex; gap: 4px; align-items: center; margin-right: 10px; }
+.lines { margin: 8px 0; padding-left: 20px; }
+table.probes td { height: auto; padding: 6px; vertical-align: top; }
+#pages a { color: var(--verified); margin-right: 8px; white-space: nowrap; }
