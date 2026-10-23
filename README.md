@@ -220,7 +220,7 @@ never free text.
 
 ## Known limits
 
-- Not deployed, and not tested against live Alexa+. Several facts about Alexa+ and Cognito come from their
+- The CDK stack is deployed to us-east-1 (probe-verified), but nothing has been tested against a live Alexa+ account, and the ladder, broker and anchor job are not deployed. Several facts about Alexa+ and Cognito come from their
   documentation and are listed as unverified in blueprint section 13.
 - A passkey whose signature counter does not increase cannot approve anything (rule HX-04). Some synced passkeys
   report a constant 0 and would be refused; this needs testing on real devices.
